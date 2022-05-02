@@ -1,5 +1,5 @@
 import 'package:http/http.dart' as http;
-import 'package:mobileapplication1/UserData.dart';
+import 'package:mobileapplication1/model/UserData.dart';
 
 class BackendAPI{
   final String baseURL = "http://89.58.36.232:8080";

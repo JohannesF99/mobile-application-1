@@ -1,11 +1,10 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
-import 'package:mobileapplication1/BackendAPI.dart';
-import 'package:mobileapplication1/UserData.dart';
 
-class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+import '../api/BackendAPI.dart';
+import '../model/UserData.dart';
+
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({Key? key}) : super(key: key);
   // that it has a State object (defined below) that contains fields that affect
   // This class is the configuration for the state. It holds the values (in this
 
@@ -16,22 +15,14 @@ class RegisterScreen extends StatefulWidget {
   // always marked "final".
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreen();
+  State<LoginScreen> createState() => _LoginScreen();
 }
 
-class _RegisterScreen extends State<RegisterScreen> {
+class _LoginScreen extends State<LoginScreen> {
 
   final emailController = TextEditingController();
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
-
-  @override
-  void dispose() {
-    // Clean up the controller when the widget is disposed.
-    emailController.dispose();
-    super.dispose();
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -78,14 +69,14 @@ class _RegisterScreen extends State<RegisterScreen> {
           ),
           Center(
               child: TextButton(
-                child: const Text("Register"),
-                onPressed: (){
+                child: const Text("Login"),
+                onPressed: () async {
                   var user = UserData(
                       emailController.text,
                       usernameController.text,
                       passwordController.text);
-                  BackendAPI().registerUser(user);
-                  Navigator.pop(context);
+                  var token = await BackendAPI().loginUser(user);
+                  Navigator.pop(context, token);
                 },
               )
           )
