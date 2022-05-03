@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobileapplication1/api/BackendAPI.dart';
-import 'package:mobileapplication1/model/UserData.dart';
 
 import 'LoginScreen.dart';
 import 'RegisterScreen.dart';
+import '../utils/StoreManager.dart';
 
 class ContentScreen extends StatefulWidget {
   const ContentScreen({Key? key, required this.title}) : super(key: key);
@@ -15,30 +15,79 @@ class ContentScreen extends StatefulWidget {
 
 class _ContentScreenState extends State<ContentScreen> {
 
-  String bearerToken = 'Bearer Token';
+  bool darkMode = false;
+
+  @override
+  void initState() {
+    StorageManager.readData("token").then((value) async {
+      if (value == null){
+        Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginScreen())
+        );
+      }
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: Drawer(
+        backgroundColor: Theme.of(context).drawerTheme.backgroundColor,
         child: ListView(
           children: [
             const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
+              padding: EdgeInsets.all(0),
+              child: Image(
+                image: AssetImage('images/settings.png'),
+                fit: BoxFit.cover,
               ),
-              child: Text('Drawer Header'),
             ),
             ListTile(
-              title: const Text('Test'),
-              onTap: () {
+              title: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.logout),
+                  Text('Logout'),
+                ],
+              ),
+              onTap: () async {
+                StorageManager.readData("token").then((value) async {
+                  BackendAPI().logoutUser(value);
+                });
+                StorageManager.deleteData("token");
                 Navigator.pop(context);
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginScreen())
+                );
               },
+            ),
+            ListTile(
+              enableFeedback: false,
+              title: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.brightness_6),
+                  const Text('Dark Mode'),
+                  const Spacer(),
+                  Switch(
+                    activeColor: Colors.black,
+                      value: darkMode,
+                      onChanged: (value){
+                        setState(() {
+                          darkMode = value;
+                        });
+                      })
+                ],
+              ),
             ),
           ]
         ),
       ),
       appBar: AppBar(
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         title: Text(widget.title),
         actions: <Widget>[
           IconButton(
@@ -61,42 +110,8 @@ class _ContentScreenState extends State<ContentScreen> {
           )
         ],
       ),
-      body: Center(
-          child: Column(
-            children: [
-              ElevatedButton(
-                child: const Text("Register"),
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const RegisterScreen())
-                  );
-                },
-              ),
-              ElevatedButton(
-                child: const Text("Login"),
-                onPressed: () async {
-                  var result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LoginScreen())
-                  );
-                  setState(() {
-                    bearerToken = result;
-                  });
-                },
-              ),
-              ElevatedButton(
-                child: const Text("Logout"),
-                onPressed: () async {
-                  var result = await BackendAPI().logoutUser(bearerToken);
-                  setState(() {
-                    bearerToken = result;
-                  });
-                },
-              ),
-              Text(bearerToken),
-            ],
-          )
+      body: const Center(
+          child: Text("Hallo!")
       ),
     );
   }

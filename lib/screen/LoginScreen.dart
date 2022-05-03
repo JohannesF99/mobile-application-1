@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:mobileapplication1/screen/RegisterScreen.dart';
 
 import '../api/BackendAPI.dart';
 import '../model/UserData.dart';
+import '../utils/StoreManager.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -20,7 +22,6 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreen extends State<LoginScreen> {
 
-  final emailController = TextEditingController();
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
 
@@ -32,57 +33,67 @@ class _LoginScreen extends State<LoginScreen> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: null,
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          SizedBox(
-            width: 300,
-            child: TextField(
-              controller: emailController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'E-Mail',
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 300,
-            child: TextField(
-              controller: usernameController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Username',
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 300,
-            child: TextField(
-              obscureText: true,
-              controller: passwordController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Password',
-              ),
-            ),
-          ),
-          Center(
-              child: ElevatedButton(
-                child: const Text("Login"),
-                onPressed: () async {
-                  var user = UserData(
-                      emailController.text,
-                      usernameController.text,
-                      passwordController.text);
-                  var token = await BackendAPI().loginUser(user);
-                  Navigator.pop(context, token);
-                },
-              )
-          )
-        ]
-      )
+    return WillPopScope(
+        onWillPop: () async => false,
+        child: Scaffold(
+            appBar: null,
+            body: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  SizedBox(
+                    width: 300,
+                    child: TextField(
+                      controller: usernameController,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: 'Username',
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 300,
+                    child: TextField(
+                      obscureText: true,
+                      controller: passwordController,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: 'Password',
+                      ),
+                    ),
+                  ),
+                  Center(
+                      child: ElevatedButton(
+                        child: const Text("Login"),
+                        onPressed: () async {
+                          var user = UserData(
+                              "",
+                              usernameController.text,
+                              passwordController.text);
+                          var token = await BackendAPI().loginUser(user);
+                          setState(() {
+                            StorageManager.saveData("token", token);
+                          });
+                          Navigator.pop(context);
+                        },
+                      )
+                  ),
+                  Center(
+                      child: ElevatedButton(
+                        child: const Text("Register"),
+                        onPressed: () async {
+                          var result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const RegisterScreen())
+                          );
+                          setState(() {
+                            StorageManager.saveData("token", result);
+                          });
+                        },
+                      )
+                  )
+                ]
+            )
+        ),
     );
   }
 }

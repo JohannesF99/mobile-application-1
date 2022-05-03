@@ -8,13 +8,17 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
+  final MaterialColor? mainColor = Colors.red;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Mobile Application 1',
       theme: ThemeData(
-        primarySwatch: Colors.red,
+        primarySwatch: mainColor,
+        brightness: Brightness.dark,
+        appBarTheme: AppBarTheme(backgroundColor: mainColor![900]),
+        drawerTheme: DrawerThemeData(backgroundColor: mainColor![900])
       ),
       debugShowCheckedModeBanner: false,
       home: const ContentScreen(title: 'Mobile Application 1'),
