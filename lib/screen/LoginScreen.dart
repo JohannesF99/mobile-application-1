@@ -68,7 +68,7 @@ class _LoginScreen extends State<LoginScreen> {
             ),
           ),
           Center(
-              child: TextButton(
+              child: ElevatedButton(
                 child: const Text("Login"),
                 onPressed: () async {
                   var user = UserData(

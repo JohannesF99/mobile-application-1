@@ -69,6 +69,7 @@ class _RegisterScreen extends State<RegisterScreen> {
           SizedBox(
             width: 300,
             child: TextField(
+              obscureText: true,
               controller: passwordController,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
@@ -77,13 +78,14 @@ class _RegisterScreen extends State<RegisterScreen> {
             ),
           ),
           Center(
-              child: TextButton(
+              child: ElevatedButton(
                 child: const Text("Register"),
                 onPressed: (){
                   var user = UserData(
                       emailController.text,
                       usernameController.text,
-                      passwordController.text);
+                      passwordController.text
+                  );
                   BackendAPI().registerUser(user);
                   Navigator.pop(context);
                 },
