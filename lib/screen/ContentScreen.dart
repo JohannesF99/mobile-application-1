@@ -17,19 +17,6 @@ class _ContentScreenState extends State<ContentScreen> {
   bool darkMode = false;
 
   @override
-  void initState() {
-    StorageManager.readData("token").then((value) async {
-      if (value == null){
-        Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const LoginScreen())
-        );
-      }
-    });
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: Drawer(

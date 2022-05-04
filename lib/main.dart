@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobileapplication1/screen/LoginScreen.dart';
 import 'package:mobileapplication1/utils/AppThemes.dart';
 import 'package:mobileapplication1/utils/StoreManager.dart';
 import 'screen/ContentScreen.dart';
@@ -30,8 +31,24 @@ class _MyAppState extends State<MyApp> {
       darkTheme: AppThemes.darkTheme,
       themeMode: _themeMode,
       debugShowCheckedModeBanner: false,
-      home: const ContentScreen(),
-    );
+      home: FutureBuilder<bool>(
+        future: showLoginPage(),
+        builder: (buildContext, snapshot) {
+          if(snapshot.hasData) {
+            if(snapshot.data!){
+              return const LoginScreen();
+            }
+            return const ContentScreen();
+          } else {
+            return const Center(child: CircularProgressIndicator());
+          }
+        },
+      ));
+  }
+
+  Future<bool> showLoginPage() async {
+    var token = await StorageManager.readData("token");
+    return token == null;
   }
 
   /// 3) Call this to change theme from any context using "of" accessor
