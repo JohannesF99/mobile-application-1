@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobileapplication1/api/BackendAPI.dart';
+import 'package:mobileapplication1/screen/UserScreen.dart';
 
 import '../main.dart';
 import 'LoginScreen.dart';
@@ -29,6 +30,31 @@ class _ContentScreenState extends State<ContentScreen> {
                 image: AssetImage('images/settings.png'),
                 fit: BoxFit.cover,
               ),
+            ),
+            ListTile(
+              title: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.person),
+                  Text(
+                    'Profile',
+                    style:  TextStyle(color: Theme.of(context).iconTheme.color),
+                  ),
+                ],
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => const UserScreen(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(
+                        opacity:animation,
+                        child: child,
+                      ),
+                    )
+                );
+              },
             ),
             ListTile(
               title: Row(
