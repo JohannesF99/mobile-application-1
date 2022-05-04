@@ -33,9 +33,12 @@ class _ContentScreenState extends State<ContentScreen> {
             ListTile(
               title: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Icon(Icons.logout),
-                  Text('Logout'),
+                children: [
+                  const Icon(Icons.logout),
+                  Text(
+                      'Logout',
+                      style:  TextStyle(color: Theme.of(context).iconTheme.color),
+                  ),
                 ],
               ),
               onTap: () async {
@@ -56,7 +59,10 @@ class _ContentScreenState extends State<ContentScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.brightness_6),
-                  const Text('Dark Mode'),
+                  Text(
+                    'Dark Mode',
+                    style:  TextStyle(color: Theme.of(context).iconTheme.color),
+                  ),
                   const Spacer(),
                   Switch(
                     activeColor: Colors.black,
