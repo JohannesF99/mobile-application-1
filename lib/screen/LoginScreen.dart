@@ -62,9 +62,7 @@ class _LoginScreen extends State<LoginScreen> {
                               context,
                               MaterialPageRoute(builder: (context) => const RegisterScreen())
                           );
-                          setState(() {
-                            StorageManager.saveData("token", result);
-                          });
+                          StorageManager.saveData("token", result);
                         },
                       )
                   )
@@ -81,7 +79,7 @@ class _LoginScreen extends State<LoginScreen> {
       passwordController.text
     );
     var token = await BackendAPI().loginUser(user);
-    if (token == "Login-Error"){
+    if (token == "Login-Error!"){
       var snackBar = SnackBar(
         content: Text(token),
       );

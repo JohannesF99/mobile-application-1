@@ -7,16 +7,16 @@ class BackendAPI{
   final String login = "/public/api/v1/account/login";
   final String logout = "/public/api/v1/account/logout";
 
-  Future<bool> registerUser(UserData userData) async {
+  Future<String> registerUser(UserData userData) async {
     var response = await http.post(
         Uri.parse(baseURL+register),
         headers: {"Content-Type": "application/json"},
         body: userData.toJson()
     );
     if (response.statusCode != 200){
-      return false;
+      return "Register-Error!";
     }
-    return true;
+    return "Account erfolgreich erstellt!";
   }
 
   Future<String> loginUser(UserData userData) async {
@@ -26,7 +26,7 @@ class BackendAPI{
         body: userData.toJson()
     );
     if (response.statusCode != 200){
-      return "Login-Error";
+      return "Login-Error!";
     }
     return response.body;
   }

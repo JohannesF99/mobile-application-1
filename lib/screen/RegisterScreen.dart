@@ -80,14 +80,20 @@ class _RegisterScreen extends State<RegisterScreen> {
           Center(
               child: ElevatedButton(
                 child: const Text("Register"),
-                onPressed: (){
+                onPressed: () async {
                   var user = UserData(
                       emailController.text,
                       usernameController.text,
                       passwordController.text
                   );
-                  BackendAPI().registerUser(user);
-                  Navigator.pop(context);
+                  var message = await BackendAPI().registerUser(user);
+                  var snackBar = SnackBar(
+                    content: Text(message),
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                  if (message != "Register-Error!") {
+                    Navigator.pop(context);
+                  }
                 },
               )
           )
