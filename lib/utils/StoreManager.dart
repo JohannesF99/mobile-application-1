@@ -22,4 +22,9 @@ class StorageManager {
     final prefs = await SharedPreferences.getInstance();
     return prefs.remove(key);
   }
+
+  static void clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.clear();
+  }
 }

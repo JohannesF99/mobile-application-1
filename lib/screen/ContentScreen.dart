@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mobileapplication1/api/BackendAPI.dart';
 
+import '../main.dart';
 import 'LoginScreen.dart';
-import 'RegisterScreen.dart';
 import '../utils/StoreManager.dart';
 
 class ContentScreen extends StatefulWidget {
-  const ContentScreen({Key? key, required this.title}) : super(key: key);
-  final String title;
+  const ContentScreen({Key? key}) : super(key: key);
 
   @override
   State<ContentScreen> createState() => _ContentScreenState();
@@ -56,7 +55,7 @@ class _ContentScreenState extends State<ContentScreen> {
                 StorageManager.readData("token").then((value) async {
                   BackendAPI().logoutUser(value);
                 });
-                StorageManager.deleteData("token");
+                StorageManager.clearAll();
                 Navigator.pop(context);
                 Navigator.push(
                     context,
@@ -76,9 +75,8 @@ class _ContentScreenState extends State<ContentScreen> {
                     activeColor: Colors.black,
                       value: darkMode,
                       onChanged: (value){
-                        setState(() {
-                          darkMode = value;
-                        });
+                        darkMode = value;
+                        _setThemeMode(value);
                       })
                 ],
               ),
@@ -88,12 +86,11 @@ class _ContentScreenState extends State<ContentScreen> {
       ),
       appBar: AppBar(
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-        title: Text(widget.title),
+        title: const Text("Mobile Application 1"),
         actions: <Widget>[
           IconButton(
             icon: const Icon(
-              Icons.help,
-              color: Colors.white,
+              Icons.help_outline,
             ),
             onPressed: () {
               showDialog(context: context, builder: (BuildContext context){
@@ -114,5 +111,13 @@ class _ContentScreenState extends State<ContentScreen> {
           child: Text("Hallo!")
       ),
     );
+  }
+
+  _setThemeMode(bool darkMode) {
+    if (darkMode) {
+      MyApp.of(context)!.changeTheme(ThemeMode.dark);
+    } else {
+      MyApp.of(context)!.changeTheme(ThemeMode.light);
+    }
   }
 }
