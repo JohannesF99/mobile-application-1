@@ -36,6 +36,15 @@ class _UserScreen extends State<UserScreen> {
     return Scaffold(
         appBar: AppBar(
           title: const Text("Benutzer"),
+          actions: [
+            IconButton(
+              icon: const Icon(
+                Icons.refresh,
+              ),
+              onPressed: () {
+              },
+            )
+          ],
           automaticallyImplyLeading: false,
         ),
         body: const Text("Hello"),
