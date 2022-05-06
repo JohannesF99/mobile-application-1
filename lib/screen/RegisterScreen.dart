@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:mobileapplication1/api/BackendAPI.dart';
-import 'package:mobileapplication1/model/UserData.dart';
+import 'package:mobileapplication1/model/LoginData.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -83,7 +83,7 @@ class _RegisterScreen extends State<RegisterScreen> {
               child: ElevatedButton(
                 child: const Text("Register"),
                 onPressed: () async {
-                  var user = UserData(
+                  var user = LoginData(
                       emailController.text,
                       usernameController.text,
                       passwordController.text

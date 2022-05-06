@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobileapplication1/screen/RegisterScreen.dart';
 
 import '../api/BackendAPI.dart';
-import '../model/UserData.dart';
+import '../model/LoginData.dart';
 import '../utils/StoreManager.dart';
 import 'ContentScreen.dart';
 
@@ -81,12 +81,13 @@ class _LoginScreen extends State<LoginScreen> {
   }
 
   void tryLogin() async {
-    final user = UserData(
+    final user = LoginData(
       "",
       usernameController.text,
       passwordController.text
     );
     var token = await BackendAPI().loginUser(user);
+    token = token.replaceAll("\"", "");
     if (token == "Login-Error!"){
       var snackBar = SnackBar(
         content: Text(token),
@@ -94,6 +95,7 @@ class _LoginScreen extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {
       StorageManager.saveData("token", token);
+      StorageManager.saveData("username", user.username);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const ContentScreen())

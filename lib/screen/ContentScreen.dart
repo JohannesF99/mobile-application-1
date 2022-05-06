@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobileapplication1/api/BackendAPI.dart';
+import 'package:mobileapplication1/model/UserData.dart';
 import 'package:mobileapplication1/screen/UserScreen.dart';
 
 import '../main.dart';
@@ -42,12 +43,15 @@ class _ContentScreenState extends State<ContentScreen> {
                   ),
                 ],
               ),
-              onTap: () {
+              onTap: () async {
                 Navigator.pop(context);
+                var token = await StorageManager.readData("token");
+                var username = await StorageManager.readData("username");
+                var userData = await BackendAPI().getUserData(token, username);
                 Navigator.push(
                     context,
                     PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => const UserScreen(),
+                      pageBuilder: (context, animation, secondaryAnimation) => UserScreen(userData: userData),
                       transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(
                         opacity:animation,
                         child: child,

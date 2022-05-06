@@ -43,7 +43,8 @@ class _MyAppState extends State<MyApp> {
             return const Center(child: CircularProgressIndicator());
           }
         },
-      ));
+      )
+    );
   }
 
   Future<bool> showLoginPage() async {
