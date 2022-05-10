@@ -66,11 +66,10 @@ class _LoginScreen extends State<LoginScreen> {
                       child: ElevatedButton(
                         child: const Text("Register"),
                         onPressed: () async {
-                          var result = await Navigator.push(
+                          Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => const RegisterScreen())
                           );
-                          StorageManager.saveData("token", result);
                         },
                       )
                   )

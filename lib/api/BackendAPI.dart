@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:http/http.dart' as http;
 import 'package:mobileapplication1/enum/Gender.dart';
@@ -9,15 +8,16 @@ import 'package:mobileapplication1/model/UserData.dart';
 class BackendAPI{
   final String _baseURL = "http://89.58.36.232:8080";
   final String _register = "/public/api/v1/account";
+  final String _deleteUser = "/api/v1/account";
   final String _login = "/public/api/v1/account/login";
   final String _logout = "/public/api/v1/account/logout";
   String _getUserDataUrl(String username) => "/api/v1/user/$username";
 
-  Future<String> registerUser(LoginData userData) async {
+  Future<String> registerUser(LoginData loginData) async {
     var response = await http.post(
         Uri.parse(_baseURL+_register),
         headers: {"Content-Type": "application/json"},
-        body: userData.toJson()
+        body: loginData.toJson()
     );
     if (response.statusCode != 200){
       return "Register-Error!";
@@ -25,11 +25,11 @@ class BackendAPI{
     return "Account erfolgreich erstellt!";
   }
 
-  Future<String> loginUser(LoginData userData) async {
+  Future<String> loginUser(LoginData loginData) async {
     var response = await http.post(
         Uri.parse(_baseURL+_login),
         headers: {"Content-Type": "application/json"},
-        body: userData.toJson()
+        body: loginData.toJson()
     );
     if (response.statusCode != 200){
       return "Login-Error!";
@@ -41,7 +41,7 @@ class BackendAPI{
     var response = await http.post(
         Uri.parse(_baseURL+_logout),
         headers: {"Content-Type": "application/json"},
-        body: bearerToken
+        body: '"$bearerToken"'
     );
     if (response.statusCode != 200){
       return "Logout-Error";
@@ -74,5 +74,20 @@ class BackendAPI{
       body: userData.toJson().toString()
     );
     return response.statusCode;
+  }
+
+  Future<bool> deleteUser(LoginData loginData, String bearerToken) async {
+    var response = await http.delete(
+        Uri.parse(_baseURL+_deleteUser),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $bearerToken',
+        },
+        body: loginData.toJson()
+    );
+    if (response.statusCode != 200){
+      return false;
+    }
+    return true;
   }
 }

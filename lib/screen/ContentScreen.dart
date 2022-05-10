@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobileapplication1/api/BackendAPI.dart';
-import 'package:mobileapplication1/model/UserData.dart';
+import 'package:mobileapplication1/model/LoginData.dart';
 import 'package:mobileapplication1/screen/UserScreen.dart';
 
 import '../main.dart';
@@ -17,6 +17,7 @@ class ContentScreen extends StatefulWidget {
 class _ContentScreenState extends State<ContentScreen> {
 
   bool darkMode = false;
+  final passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -72,14 +73,62 @@ class _ContentScreenState extends State<ContentScreen> {
                 ],
               ),
               onTap: () async {
-                StorageManager.readData("token").then((value) async {
-                  BackendAPI().logoutUser(value);
-                });
-                StorageManager.clearAll();
+                logoutUser();
+              },
+            ),
+            ListTile(
+              title: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.delete_forever),
+                  Text(
+                    'Delete Account',
+                    style:  TextStyle(color: Theme.of(context).iconTheme.color),
+                  ),
+                ],
+              ),
+              onTap: (){
                 Navigator.pop(context);
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen())
+                showDialog(context: context, builder: (BuildContext context) =>
+                    AlertDialog(
+                      title: const Text("Account löschen?"),
+                      content: const Text("Sie sind im Begriff ihren Account zu löschen!"),
+                      actions: [
+                        TextField(
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: 'Password',
+                          ),
+                          controller: passwordController,
+                          obscureText: true,
+                        ),
+                        TextButton(
+                          child: const Text("OK"),
+                          onPressed: () async {
+                            var username = await StorageManager.readData("username");
+                            var bearerToken = await StorageManager.readData("token");
+                            var user = LoginData(
+                                "",
+                                username,
+                                passwordController.text
+                            );
+                            if (await BackendAPI().deleteUser(user, bearerToken)){
+                              StorageManager.clearAll();
+                              Navigator.pop(context);
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const LoginScreen())
+                              );
+                            } else {
+                              var snackBar = const SnackBar(
+                                content: Text("Fehler beim Löschen!"),
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                            }
+                          },
+                        )
+                      ],
+                    )
                 );
               },
             ),
@@ -116,16 +165,16 @@ class _ContentScreenState extends State<ContentScreen> {
               Icons.help_outline,
             ),
             onPressed: () {
-              showDialog(context: context, builder: (BuildContext context){
-                return const AlertDialog(
+              showDialog(context: context, builder: (BuildContext context) =>
+              const AlertDialog(
                   title: Text("Über Die App"),
                   content: Text(
                   "Diese App ermöglicht Ihnen eine Account-Verwaltung!\n\n"
                   "\"Register\":\nErstellen Sie ein Konto!\n\n"
                   "\"Login\":\n Melden Sie sich auf Ihrem Konto an!\n\n"
                   "\"Logout\":\n Melden Sie sich von Ihrem Konto ab!"),
-                );
-              });
+                )
+              );
             },
           )
         ],
@@ -133,6 +182,17 @@ class _ContentScreenState extends State<ContentScreen> {
       body: const Center(
           child: Text("Hallo!")
       ),
+    );
+  }
+
+  Future<void> logoutUser() async {
+    var value = await StorageManager.readData("token");
+    BackendAPI().logoutUser(value);
+    StorageManager.clearAll();
+    Navigator.pop(context);
+    Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen())
     );
   }
 
