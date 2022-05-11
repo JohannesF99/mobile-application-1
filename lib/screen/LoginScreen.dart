@@ -15,14 +15,13 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreen extends State<LoginScreen> {
 
-  final usernameController = TextEditingController();
-  final passwordController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is disposed.
-    usernameController.dispose();
-    passwordController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -38,7 +37,7 @@ class _LoginScreen extends State<LoginScreen> {
                   SizedBox(
                     width: 300,
                     child: TextField(
-                      controller: usernameController,
+                      controller: _usernameController,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Username',
@@ -49,7 +48,7 @@ class _LoginScreen extends State<LoginScreen> {
                     width: 300,
                     child: TextField(
                       obscureText: true,
-                      controller: passwordController,
+                      controller: _passwordController,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Password',
@@ -59,7 +58,7 @@ class _LoginScreen extends State<LoginScreen> {
                   Center(
                       child: ElevatedButton(
                         child: const Text("Login"),
-                        onPressed: tryLogin,
+                        onPressed: _tryLogin,
                       )
                   ),
                   Center(
@@ -80,11 +79,11 @@ class _LoginScreen extends State<LoginScreen> {
     );
   }
 
-  void tryLogin() async {
+  void _tryLogin() async {
     final user = UserData(
       "",
-      usernameController.text,
-      passwordController.text
+      _usernameController.text,
+      _passwordController.text
     );
     var token = await BackendAPI().loginUser(user);
     if (token == "Login-Error!"){

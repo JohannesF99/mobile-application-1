@@ -20,7 +20,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  /// 1) our themeMode "state" field
+
   ThemeMode _themeMode = ThemeMode.system;
 
   @override
@@ -40,7 +40,9 @@ class _MyAppState extends State<MyApp> {
             }
             return const ContentScreen();
           } else {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+                child: CircularProgressIndicator()
+            );
           }
         },
       ));
@@ -51,9 +53,6 @@ class _MyAppState extends State<MyApp> {
     return token == null;
   }
 
-  /// 3) Call this to change theme from any context using "of" accessor
-  /// e.g.:
-  /// MyApp.of(context).changeTheme(ThemeMode.dark);
   void changeTheme(ThemeMode themeMode) {
     setState(() {
       _themeMode = themeMode;

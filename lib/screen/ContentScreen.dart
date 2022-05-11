@@ -14,7 +14,7 @@ class ContentScreen extends StatefulWidget {
 
 class _ContentScreenState extends State<ContentScreen> {
 
-  bool darkMode = false;
+  bool _darkMode = false;
 
   @override
   Widget build(BuildContext context) {
@@ -66,11 +66,12 @@ class _ContentScreenState extends State<ContentScreen> {
                   const Spacer(),
                   Switch(
                     activeColor: Colors.black,
-                      value: darkMode,
-                      onChanged: (value){
-                        darkMode = value;
-                        _setThemeMode(value);
-                      })
+                    value: _darkMode,
+                    onChanged: (value){
+                      _darkMode = value;
+                      _setThemeMode(value);
+                    }
+                  )
                 ],
               ),
             ),

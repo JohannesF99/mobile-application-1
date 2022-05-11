@@ -2,14 +2,14 @@ import 'package:http/http.dart' as http;
 import 'package:mobileapplication1/model/UserData.dart';
 
 class BackendAPI{
-  final String baseURL = "http://89.58.36.232:8080";
-  final String register = "/public/api/v1/account";
-  final String login = "/public/api/v1/account/login";
-  final String logout = "/public/api/v1/account/logout";
+  final String _baseURL = "http://89.58.36.232:8080";
+  final String _register = "/public/api/v1/account";
+  final String _login = "/public/api/v1/account/login";
+  final String _logout = "/public/api/v1/account/logout";
 
   Future<String> registerUser(UserData userData) async {
     var response = await http.post(
-        Uri.parse(baseURL+register),
+        Uri.parse(_baseURL+_register),
         headers: {"Content-Type": "application/json"},
         body: userData.toJson()
     );
@@ -21,7 +21,7 @@ class BackendAPI{
 
   Future<String> loginUser(UserData userData) async {
     var response = await http.post(
-        Uri.parse(baseURL+login),
+        Uri.parse(_baseURL+_login),
         headers: {"Content-Type": "application/json"},
         body: userData.toJson()
     );
@@ -33,7 +33,7 @@ class BackendAPI{
 
   Future<String> logoutUser(String bearerToken) async {
     var response = await http.post(
-        Uri.parse(baseURL+logout),
+        Uri.parse(_baseURL+_logout),
         headers: {"Content-Type": "application/json"},
         body: bearerToken
     );
