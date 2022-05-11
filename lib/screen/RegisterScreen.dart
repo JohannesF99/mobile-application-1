@@ -27,7 +27,6 @@ class _RegisterScreen extends State<RegisterScreen> {
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is disposed.
     _emailController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
