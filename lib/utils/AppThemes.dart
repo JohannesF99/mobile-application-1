@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 
+/// Beschreibt das Light- und Dark-Theme der Anwendung.
+/// Durch die Kapselung als seperate Klasse können alle Design-Entscheidungen
+/// in dieser Datei getroffen werden.
 class AppThemes{
+  /// Das helle Thema der Anwendung.
+  /// Deklariert als statische Variable, sodass kein Objekt der Klasse benötigt
+  /// wird, um auf das Thema zuzugreifen.
   static final lightTheme = ThemeData(
       primarySwatch: Colors.red,
       brightness: Brightness.light,
@@ -19,6 +25,9 @@ class AppThemes{
       )
   );
 
+  /// Das dunkle Thema der Anwendung.
+  /// Deklariert als statische Variable, sodass kein Objekt der Klasse benötigt
+  /// wird, um auf das Thema zuzugreifen.
   static final darkTheme = ThemeData(
       primarySwatch: Colors.red,
       brightness: Brightness.dark,

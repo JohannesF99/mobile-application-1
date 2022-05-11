@@ -15,7 +15,11 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreen extends State<LoginScreen> {
 
+  /// Controller für das Textfeld des Benutzernamens.
+  /// Wird verwendet, um auf den Text des Textfelds zuzugreifen.
   final _usernameController = TextEditingController();
+  /// Controller für das Textfeld des Passworts.
+  /// Wird verwendet, um auf den Text des Textfelds zuzugreifen.
   final _passwordController = TextEditingController();
 
   @override
@@ -79,6 +83,9 @@ class _LoginScreen extends State<LoginScreen> {
     );
   }
 
+  /// Generiert aus den Daten der Textfelder ein Objekt der Klasse [UserData].
+  /// Das Objekt wird anschließend an das Backend gesendet und der Rückgabewert
+  /// evaluiert.
   void _tryLogin() async {
     final user = UserData(
       "",

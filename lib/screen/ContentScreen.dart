@@ -14,6 +14,7 @@ class ContentScreen extends StatefulWidget {
 
 class _ContentScreenState extends State<ContentScreen> {
 
+  /// Beschreibt den Modus des App-Themas.
   bool _darkMode = false;
 
   @override
@@ -107,6 +108,7 @@ class _ContentScreenState extends State<ContentScreen> {
     );
   }
 
+  /// Übernimmt den aktuellen Modus und ändert das Thema.
   _setThemeMode(bool darkMode) {
     if (darkMode) {
       MyApp.of(context)!.changeTheme(ThemeMode.dark);
