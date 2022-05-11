@@ -5,6 +5,8 @@ import '../main.dart';
 import 'LoginScreen.dart';
 import '../utils/StoreManager.dart';
 
+/// Die root-Seite der Anwendung. Enthält alle Routen zu anderen Seiten.
+/// Umfasst Routen um den Logout und den DarkMode zu steuern.
 class ContentScreen extends StatefulWidget {
   const ContentScreen({Key? key}) : super(key: key);
 

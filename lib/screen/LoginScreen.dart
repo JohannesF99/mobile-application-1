@@ -6,6 +6,9 @@ import '../model/UserData.dart';
 import '../utils/StoreManager.dart';
 import 'ContentScreen.dart';
 
+/// Beschreibt den Login-Vorgang als Seite.
+/// Sollte noch kein Account vorhanden sein, so wird auf den [RegisterScreen]
+/// verwiesen.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 

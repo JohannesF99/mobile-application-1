@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mobileapplication1/api/BackendAPI.dart';
 import 'package:mobileapplication1/model/UserData.dart';
 
+/// Beschreibt die Registration. Nach erfolgreicher Registration wird
+/// zurück auf die Login-Seite verwiesen.
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
 
