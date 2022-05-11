@@ -4,6 +4,8 @@ import 'package:mobileapplication1/model/UserData.dart';
 /// Verwaltet die Kommuniktation mit dem Backend der Anwendung.
 /// Dazu enthält die Klasse alle Endpunkte, sowie Funktionen, welche diese
 /// Endpunkte ansprechen.
+/// Die OpenAPI Documentation des Backend ist
+/// [hier](http://89.58.36.232:8080/swagger-ui/index.html) zu finden.
 class BackendAPI{
   // API-Endpunkte des Backend
   final String _baseURL = "http://89.58.36.232:8080";
