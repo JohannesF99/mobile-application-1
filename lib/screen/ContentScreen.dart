@@ -44,17 +44,7 @@ class _ContentScreenState extends State<ContentScreen> {
                   ),
                 ],
               ),
-              onTap: () async {
-                StorageManager.readData("token").then((value) async {
-                  BackendAPI().logoutUser(value);
-                });
-                StorageManager.clearAll();
-                Navigator.pop(context);
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen())
-                );
-              },
+              onTap: _tryLogout
             ),
             ListTile(
               enableFeedback: false,
@@ -107,6 +97,21 @@ class _ContentScreenState extends State<ContentScreen> {
       body: const Center(
           child: Text("Hallo!")
       ),
+    );
+  }
+
+  /// Lädt den Login-Token aus den Shared Preferences und versucht den Benutzer
+  /// damit abzumelden.
+  /// Anschließend wird der gesammte Speicher der Shared Preferences gelöscht
+  /// und der Navigator-Stack aktualisiert.
+  void _tryLogout() async {
+    final value = await StorageManager.readData("token");
+    BackendAPI().logoutUser(value);
+    StorageManager.clearAll();
+    Navigator.pop(context);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen())
     );
   }
 
