@@ -14,13 +14,13 @@ class MyApp extends StatefulWidget {
   @override
   _MyAppState createState() => _MyAppState();
 
-  /// InheritedWidget style accessor to our State object.
   static _MyAppState? of(BuildContext context) =>
       context.findAncestorStateOfType<_MyAppState>();
 }
 
 class _MyAppState extends State<MyApp> {
-  /// 1) our themeMode "state" field
+
+  /// Beschreibt, welches Thema für die App gerade festgelegt ist.
   ThemeMode _themeMode = ThemeMode.system;
 
   @override
@@ -40,21 +40,26 @@ class _MyAppState extends State<MyApp> {
             }
             return const ContentScreen();
           } else {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+                child: CircularProgressIndicator()
+            );
           }
         },
       )
     );
   }
 
+  /// Untersucht, ob ein Login-Token in den Shared Preferences existiert.
+  /// Falls nicht, so ist kein User angemeldet und er gibt 'false' zurück.
+  /// Falls ja, so ist schon ein User angemeldet und er gibt 'ja' zurück.
   Future<bool> showLoginPage() async {
     var token = await StorageManager.readData("token");
     return token == null;
   }
 
-  /// 3) Call this to change theme from any context using "of" accessor
-  /// e.g.:
-  /// MyApp.of(context).changeTheme(ThemeMode.dark);
+  /// Wechselt das Thema.
+  /// Anschließend wird 'setState()' aufgerufen, um den Widget-Tree neu zu
+  /// generieren und die Änderung sichtbar zu machen.
   void changeTheme(ThemeMode themeMode) {
     setState(() {
       _themeMode = themeMode;

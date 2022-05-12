@@ -6,6 +6,9 @@ import '../model/LoginData.dart';
 import '../utils/StoreManager.dart';
 import 'ContentScreen.dart';
 
+/// Beschreibt den Login-Vorgang als Seite.
+/// Sollte noch kein Account vorhanden sein, so wird auf den [RegisterScreen]
+/// verwiesen.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
@@ -15,14 +18,18 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreen extends State<LoginScreen> {
 
-  final usernameController = TextEditingController();
-  final passwordController = TextEditingController();
+  /// Controller für das Textfeld des Benutzernamens.
+  /// Wird verwendet, um auf den Text des Textfelds zuzugreifen.
+  final _usernameController = TextEditingController();
+
+  /// Controller für das Textfeld des Passworts.
+  /// Wird verwendet, um auf den Text des Textfelds zuzugreifen.
+  final _passwordController = TextEditingController();
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is disposed.
-    usernameController.dispose();
-    passwordController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -38,7 +45,7 @@ class _LoginScreen extends State<LoginScreen> {
                   SizedBox(
                     width: 300,
                     child: TextField(
-                      controller: usernameController,
+                      controller: _usernameController,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Username',
@@ -49,7 +56,7 @@ class _LoginScreen extends State<LoginScreen> {
                     width: 300,
                     child: TextField(
                       obscureText: true,
-                      controller: passwordController,
+                      controller: _passwordController,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Password',
@@ -59,7 +66,7 @@ class _LoginScreen extends State<LoginScreen> {
                   Center(
                       child: ElevatedButton(
                         child: const Text("Login"),
-                        onPressed: tryLogin,
+                        onPressed: _tryLogin,
                       )
                   ),
                   Center(
@@ -79,11 +86,14 @@ class _LoginScreen extends State<LoginScreen> {
     );
   }
 
-  void tryLogin() async {
+  /// Generiert aus den Daten der Textfelder ein Objekt der Klasse [UserData].
+  /// Das Objekt wird anschließend an das Backend gesendet und der Rückgabewert
+  /// evaluiert.
+  void _tryLogin() async {
     final user = LoginData(
       "",
-      usernameController.text,
-      passwordController.text
+      _usernameController.text,
+      _passwordController.text
     );
     var token = await BackendAPI().loginUser(user);
     token = token.replaceAll("\"", "");

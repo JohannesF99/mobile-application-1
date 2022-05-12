@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:mobileapplication1/api/BackendAPI.dart';
 import 'package:mobileapplication1/model/LoginData.dart';
-import 'package:mobileapplication1/screen/UserScreen.dart';
 
 import '../main.dart';
 import 'LoginScreen.dart';
 import '../utils/StoreManager.dart';
+import 'UserScreen.dart';
 
+/// Die root-Seite der Anwendung. Enthält alle Routen zu anderen Seiten.
+/// Umfasst Routen um den Logout und den DarkMode zu steuern.
 class ContentScreen extends StatefulWidget {
   const ContentScreen({Key? key}) : super(key: key);
 
@@ -16,7 +18,8 @@ class ContentScreen extends StatefulWidget {
 
 class _ContentScreenState extends State<ContentScreen> {
 
-  bool darkMode = false;
+  /// Beschreibt den Modus des App-Themas.
+  bool _darkMode = false;
   final passwordController = TextEditingController();
 
   @override
@@ -73,7 +76,7 @@ class _ContentScreenState extends State<ContentScreen> {
                 ],
               ),
               onTap: () async {
-                logoutUser();
+                _logoutUser();
               },
             ),
             ListTile(
@@ -145,11 +148,12 @@ class _ContentScreenState extends State<ContentScreen> {
                   const Spacer(),
                   Switch(
                     activeColor: Colors.black,
-                      value: darkMode,
-                      onChanged: (value){
-                        darkMode = value;
-                        _setThemeMode(value);
-                      })
+                    value: _darkMode,
+                    onChanged: (value){
+                      _darkMode = value;
+                      _setThemeMode(value);
+                    }
+                  )
                 ],
               ),
             ),
@@ -185,7 +189,7 @@ class _ContentScreenState extends State<ContentScreen> {
     );
   }
 
-  Future<void> logoutUser() async {
+  Future<void> _logoutUser() async {
     var value = await StorageManager.readData("token");
     BackendAPI().logoutUser(value);
     StorageManager.clearAll();
@@ -196,6 +200,7 @@ class _ContentScreenState extends State<ContentScreen> {
     );
   }
 
+  /// Übernimmt den aktuellen Modus und ändert das Thema.
   _setThemeMode(bool darkMode) {
     if (darkMode) {
       MyApp.of(context)!.changeTheme(ThemeMode.dark);

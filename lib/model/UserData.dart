@@ -1,6 +1,10 @@
 import '../enum/Gender.dart';
 
-class UserData{
+/// Datenklasse, welche alle nötigen Informationen zur Registration und
+/// Anmeldung enthält.
+/// Enthält zusätzlich noch eine manuelle Methode, um ein Objekt als JSON
+/// auszugeben.
+class UserData {
   String username;
   String email;
   String? name;
@@ -25,6 +29,9 @@ class UserData{
         gender = Gender.values.byName(json['gender']),
         birthday = DateTime.tryParse(json['birthday'].toString());
 
+  /// Konvertiert eine Objekt der Klasse in JSON.
+  /// In diesem Fall noch manuell programmiert, in späteren Iterationen soll
+  /// dies automatisch geschehen.
   Map<String, dynamic> toJson() => {
     '"username"': '"$username"',
     '"email"': '"$email"',

@@ -1,19 +1,11 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:mobileapplication1/api/BackendAPI.dart';
 import 'package:mobileapplication1/model/LoginData.dart';
 
+/// Beschreibt die Registration. Nach erfolgreicher Registration wird
+/// zurück auf die Login-Seite verwiesen.
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
-  // that it has a State object (defined below) that contains fields that affect
-  // This class is the configuration for the state. It holds the values (in this
-
-  // how it looks.
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-
-  // always marked "final".
 
   @override
   State<RegisterScreen> createState() => _RegisterScreen();
@@ -21,28 +13,28 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreen extends State<RegisterScreen> {
 
-  final emailController = TextEditingController();
-  final usernameController = TextEditingController();
-  final passwordController = TextEditingController();
+  /// Controller für das Textfeld der E-Mail.
+  /// Wird verwendet, um auf den Text des Textfelds zuzugreifen.
+  final _emailController = TextEditingController();
+
+  /// Controller für das Textfeld des Benutzernamens.
+  /// Wird verwendet, um auf den Text des Textfelds zuzugreifen.
+  final _usernameController = TextEditingController();
+
+  /// Controller für das Textfeld des Passworts.
+  /// Wird verwendet, um auf den Text des Textfelds zuzugreifen.
+  final _passwordController = TextEditingController();
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is disposed.
-    emailController.dispose();
-    usernameController.dispose();
-    passwordController.dispose();
+    _emailController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: null,
       body: Column(
@@ -51,7 +43,7 @@ class _RegisterScreen extends State<RegisterScreen> {
           SizedBox(
             width: 300,
             child: TextField(
-              controller: emailController,
+              controller: _emailController,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 hintText: 'E-Mail',
@@ -61,7 +53,7 @@ class _RegisterScreen extends State<RegisterScreen> {
           SizedBox(
             width: 300,
             child: TextField(
-              controller: usernameController,
+              controller: _usernameController,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 hintText: 'Username',
@@ -72,7 +64,7 @@ class _RegisterScreen extends State<RegisterScreen> {
             width: 300,
             child: TextField(
               obscureText: true,
-              controller: passwordController,
+              controller: _passwordController,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 hintText: 'Password',
@@ -84,9 +76,9 @@ class _RegisterScreen extends State<RegisterScreen> {
                 child: const Text("Register"),
                 onPressed: () async {
                   var user = LoginData(
-                      emailController.text,
-                      usernameController.text,
-                      passwordController.text
+                      _emailController.text,
+                      _usernameController.text,
+                      _passwordController.text
                   );
                   var message = await BackendAPI().registerUser(user);
                   var snackBar = SnackBar(

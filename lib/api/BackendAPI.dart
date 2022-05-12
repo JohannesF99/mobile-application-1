@@ -5,7 +5,13 @@ import 'package:mobileapplication1/enum/Gender.dart';
 import 'package:mobileapplication1/model/LoginData.dart';
 import 'package:mobileapplication1/model/UserData.dart';
 
+/// Verwaltet die Kommuniktation mit dem Backend der Anwendung.
+/// Dazu enthält die Klasse alle Endpunkte, sowie Funktionen, welche diese
+/// Endpunkte ansprechen.
+/// Die OpenAPI Documentation des Backend ist
+/// [hier](http://89.58.36.232:8080/swagger-ui/index.html) zu finden.
 class BackendAPI{
+  // API-Endpunkte des Backend
   final String _baseURL = "http://89.58.36.232:8080";
   final String _register = "/public/api/v1/account";
   final String _deleteUser = "/api/v1/account";
@@ -13,6 +19,9 @@ class BackendAPI{
   final String _logout = "/public/api/v1/account/logout";
   String _getUserDataUrl(String username) => "/api/v1/user/$username";
 
+  /// Übernimmt die Benutzerdaten und registriert den Benutzer im Backend.
+  /// Sollte der Status-Code nicht "200 (OK)" sein, so wird eine Fehlermeldung
+  /// zurück gegeben.
   Future<String> registerUser(LoginData loginData) async {
     var response = await http.post(
         Uri.parse(_baseURL+_register),
@@ -25,6 +34,10 @@ class BackendAPI{
     return "Account erfolgreich erstellt!";
   }
 
+  /// Übernimmt die Benutzerdaten und meldet den Benutzer im Backend an.
+  /// Sollte der Status-Code nicht "200 (OK)" sein, so wird eine Fehlermeldung
+  /// zurück gegeben -
+  /// bei erfolgreicher Anmeldung wird der Login-Token zurückgegeben.
   Future<String> loginUser(LoginData loginData) async {
     var response = await http.post(
         Uri.parse(_baseURL+_login),
@@ -37,6 +50,10 @@ class BackendAPI{
     return response.body;
   }
 
+  /// Übernimmt das Login-Token und meldet den Benutzer im Backend ab
+  /// und der Token wird ungültig.
+  /// Sollte der Status-Code nicht "200 (OK)" sein, so wird eine Fehlermeldung
+  /// zurück gegeben.
   Future<String> logoutUser(String bearerToken) async {
     var response = await http.post(
         Uri.parse(_baseURL+_logout),
