@@ -32,14 +32,14 @@ class UserData {
   /// Konvertiert eine Objekt der Klasse in JSON.
   /// In diesem Fall noch manuell programmiert, in späteren Iterationen soll
   /// dies automatisch geschehen.
-  Map<String, dynamic> toJson() => {
+  String toJson() => {
     '"username"': '"$username"',
     '"email"': '"$email"',
     '"name"': '"$name"',
     '"vorname"': '"$vorname"',
     '"gender"': '"${gender.name}"',
     '"birthday"': '"${birthday!.year.toString()}-${birthday!.month.toString().padLeft(2,'0')}-${birthday!.day.toString().padLeft(2,'0')}"',
-  };
+  }.toString();
 
   String getBirthday(){
     if (birthday == null) {

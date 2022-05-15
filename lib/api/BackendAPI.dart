@@ -5,6 +5,8 @@ import 'package:mobileapplication1/enum/Gender.dart';
 import 'package:mobileapplication1/model/LoginData.dart';
 import 'package:mobileapplication1/model/UserData.dart';
 
+import '../model/ContentData.dart';
+
 /// Verwaltet die Kommuniktation mit dem Backend der Anwendung.
 /// Dazu enthält die Klasse alle Endpunkte, sowie Funktionen, welche diese
 /// Endpunkte ansprechen.
@@ -14,17 +16,18 @@ class BackendAPI{
   // API-Endpunkte des Backend
   final String _baseURL = "http://89.58.36.232:8080";
   final String _register = "/public/api/v1/account";
-  final String _deleteUser = "/api/v1/account";
   final String _login = "/public/api/v1/account/login";
   final String _logout = "/public/api/v1/account/logout";
+  final String _deleteUser = "/api/v1/account";
   String _getUserDataUrl(String username) => "/api/v1/user/$username";
+  String _getBaseContentUrl(String username) => "/api/v1/user/$username/content";
 
   /// Übernimmt die Benutzerdaten und registriert den Benutzer im Backend.
   /// Sollte der Status-Code nicht "200 (OK)" sein, so wird eine Fehlermeldung
   /// zurück gegeben.
   Future<String> registerUser(LoginData loginData) async {
     var response = await http.post(
-        Uri.parse(_baseURL+_register),
+        Uri.parse(_baseURL + _register),
         headers: {"Content-Type": "application/json"},
         body: loginData.toJson()
     );
@@ -40,7 +43,7 @@ class BackendAPI{
   /// bei erfolgreicher Anmeldung wird der Login-Token zurückgegeben.
   Future<String> loginUser(LoginData loginData) async {
     var response = await http.post(
-        Uri.parse(_baseURL+_login),
+        Uri.parse(_baseURL + _login),
         headers: {"Content-Type": "application/json"},
         body: loginData.toJson()
     );
@@ -56,7 +59,7 @@ class BackendAPI{
   /// zurück gegeben.
   Future<String> logoutUser(String bearerToken) async {
     var response = await http.post(
-        Uri.parse(_baseURL+_logout),
+        Uri.parse(_baseURL + _logout),
         headers: {"Content-Type": "application/json"},
         body: '"$bearerToken"'
     );
@@ -68,7 +71,7 @@ class BackendAPI{
 
   Future<UserData> getUserData(String bearerToken, String username) async {
     var response = await http.get(
-        Uri.parse(_baseURL+_getUserDataUrl(username)),
+        Uri.parse(_baseURL + _getUserDataUrl(username)),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $bearerToken',
@@ -83,19 +86,19 @@ class BackendAPI{
 
   Future<int> sendNewUserData(String bearerToken, String username, UserData userData) async {
     var response = await http.put(
-      Uri.parse(_baseURL+_getUserDataUrl(username)),
+      Uri.parse(_baseURL + _getUserDataUrl(username)),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $bearerToken',
       },
-      body: userData.toJson().toString()
+      body: userData.toJson()
     );
     return response.statusCode;
   }
 
   Future<bool> deleteUser(LoginData loginData, String bearerToken) async {
     var response = await http.delete(
-        Uri.parse(_baseURL+_deleteUser),
+        Uri.parse(_baseURL + _deleteUser),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $bearerToken',
@@ -106,5 +109,36 @@ class BackendAPI{
       return false;
     }
     return true;
+  }
+
+  Future<bool> sendNewPost(String bearerToken, String username, ContentData contentData) async {
+    var response = await http.post(
+        Uri.parse(_baseURL + _getBaseContentUrl(username)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $bearerToken',
+        },
+        body: contentData.toJson()
+    );
+    if (response.statusCode != 200){
+      return false;
+    }
+    return true;
+  }
+
+  Future<List<ContentData>> getUserContent(String bearerToken, String username) async {
+    var response = await http.get(
+        Uri.parse(_baseURL + _getBaseContentUrl(username) + '/all'),
+        headers: {
+          'Authorization': 'Bearer $bearerToken',
+        }
+    );
+    if (response.statusCode != 200){
+      return [];
+    }
+    return List<ContentData>.from(
+        jsonDecode(response.body).map((i) =>
+            ContentData.fromJson(i))
+    );
   }
 }
