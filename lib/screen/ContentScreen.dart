@@ -41,12 +41,27 @@ class _ContentScreenState extends State<ContentScreen> {
         backgroundColor: Theme.of(context).drawerTheme.backgroundColor,
         child: ListView(
           children: [
-            const DrawerHeader(
-              padding: EdgeInsets.all(0),
-              child: Image(
-                image: AssetImage('images/settings.png'),
-                fit: BoxFit.cover,
-              ),
+            Stack(
+              children: [
+                const DrawerHeader(
+                  padding: EdgeInsets.all(0),
+                  child: Image(
+                    image: AssetImage('images/settings.png'),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned(
+                  left: 10,
+                  bottom: 20,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(200.0),
+                    child: const Image(
+                      width: 100,
+                      image: AssetImage('images/profilbild.jpg'),
+                    ),
+                  ),
+                )
+              ],
             ),
             ListTile(
               title: Row(
