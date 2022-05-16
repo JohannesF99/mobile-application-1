@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobileapplication1/api/BackendAPI.dart';
+import 'package:mobileapplication1/enum/Interaction.dart';
 import 'package:mobileapplication1/model/ContentData.dart';
 import 'package:mobileapplication1/model/LoginData.dart';
 
@@ -230,20 +231,62 @@ class _ContentScreenState extends State<ContentScreen> {
                                   final token = await StorageManager.readData("token");
                                   final username = await StorageManager.readData("username");
                                   final contentId = userContent[i].contentId!;
-                                  await BackendAPI().likeContent(token, username, contentId)
-                                      .whenComplete(() => _getContent());
+                                  if (userContent[i].interactionData!.myInteraction == Interaction.Dislike || userContent[i].interactionData!.myInteraction == Interaction.None) {
+                                    final result = await BackendAPI().likeContent(token, username, contentId);
+                                    if (result && userContent[i].interactionData!.myInteraction == Interaction.Dislike) {
+                                      userContent[i].interactionData!.likes++;
+                                      userContent[i].interactionData!.dislikes--;
+                                      userContent[i].interactionData!.myInteraction = Interaction.Like;
+                                    } else if (result && userContent[i].interactionData!.myInteraction == Interaction.None) {
+                                      userContent[i].interactionData!.likes++;
+                                      userContent[i].interactionData!.myInteraction = Interaction.Like;
+                                    }
+                                  } else {
+                                    final result = await BackendAPI().removeInteraction(token, username, contentId);
+                                    if (result && userContent[i].interactionData!.myInteraction == Interaction.Dislike) {
+                                      userContent[i].interactionData!.dislikes--;
+                                      userContent[i].interactionData!.myInteraction = Interaction.None;
+                                    } else if (result && userContent[i].interactionData!.myInteraction == Interaction.Like) {
+                                      userContent[i].interactionData!.likes--;
+                                      userContent[i].interactionData!.myInteraction = Interaction.None;
+                                    }
+                                  }
+
+                                  setState(() {});
                                 },
-                                icon: const Icon(Icons.keyboard_arrow_up)
+                                icon: const Icon(Icons.keyboard_arrow_up),
+                                color: _getColor(i, Interaction.Like),
                             ),
+                            Text("${userContent[i].interactionData!.likes - userContent[i].interactionData!.dislikes}"),
                             IconButton(
                                 onPressed: () async {
                                   final token = await StorageManager.readData("token");
                                   final username = await StorageManager.readData("username");
                                   final contentId = userContent[i].contentId!;
-                                  await BackendAPI().dislikeContent(token, username, contentId)
-                                      .whenComplete(() => _getContent());
+                                  if (userContent[i].interactionData!.myInteraction == Interaction.Like || userContent[i].interactionData!.myInteraction == Interaction.None) {
+                                    final result = await BackendAPI().dislikeContent(token, username, contentId);
+                                    if (result && userContent[i].interactionData!.myInteraction == Interaction.Like) {
+                                      userContent[i].interactionData!.likes--;
+                                      userContent[i].interactionData!.dislikes++;
+                                      userContent[i].interactionData!.myInteraction = Interaction.Dislike;
+                                    } else if (result && userContent[i].interactionData!.myInteraction == Interaction.None) {
+                                      userContent[i].interactionData!.dislikes++;
+                                      userContent[i].interactionData!.myInteraction = Interaction.Dislike;
+                                    }
+                                  } else {
+                                    final result = await BackendAPI().removeInteraction(token, username, contentId);
+                                    if (result && userContent[i].interactionData!.myInteraction == Interaction.Dislike) {
+                                      userContent[i].interactionData!.dislikes--;
+                                      userContent[i].interactionData!.myInteraction = Interaction.None;
+                                    } else if (result && userContent[i].interactionData!.myInteraction == Interaction.Like) {
+                                      userContent[i].interactionData!.likes--;
+                                      userContent[i].interactionData!.myInteraction = Interaction.None;
+                                    }
+                                  }
+                                  setState(() {});
                                 },
-                                icon: const Icon(Icons.keyboard_arrow_down)
+                                icon: const Icon(Icons.keyboard_arrow_down),
+                                color: _getColor(i, Interaction.Dislike),
                             ),
                             const Spacer(),
                             IconButton(
@@ -251,19 +294,18 @@ class _ContentScreenState extends State<ContentScreen> {
                                   final token = await StorageManager.readData("token");
                                   final username = await StorageManager.readData("username");
                                   final contentId = userContent[i].contentId!;
-                                  BackendAPI().deleteUserContent(token, username, contentId).then((value) => _getContent());
+                                  final result = await BackendAPI().deleteUserContent(token, username, contentId);
+                                  if (result) {
+                                    setState(() {
+                                      userContent.removeAt(i);
+                                      _index--;
+                                    });
+                                  }
                                 },
                                 icon: const Icon(Icons.delete_sweep_outlined)
                             ),
                           ],
                         ),
-                        Row(
-                          children: [
-                            Text("${userContent[i].interactionData?.likes}"),
-                            Text("${userContent[i].interactionData?.dislikes}"),
-                            const Spacer(),
-                          ],
-                        )
                       ],
                     )
                   ),
@@ -326,5 +368,12 @@ class _ContentScreenState extends State<ContentScreen> {
     setState(() {
       userContent = list;
     });
+  }
+
+  Color _getColor(int i, Interaction interaction) {
+    if (interaction == userContent[i].interactionData!.myInteraction){
+      return Theme.of(context).primaryColor;
+    }
+    return Theme.of(context).backgroundColor;
   }
 }

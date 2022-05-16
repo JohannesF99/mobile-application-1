@@ -195,4 +195,17 @@ class BackendAPI{
     }
     return true;
   }
+
+  Future<bool> removeInteraction(String bearerToken, String username, int contentId) async {
+    var response = await http.delete(
+        Uri.parse(_baseURL + _getBaseInteractionUrl(username) + '/$contentId/remove'),
+        headers: {
+          'Authorization': 'Bearer $bearerToken',
+        }
+    );
+    if (response.statusCode != 200){
+      return false;
+    }
+    return true;
+  }
 }
