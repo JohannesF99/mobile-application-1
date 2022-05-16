@@ -118,7 +118,7 @@ class BackendAPI{
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $bearerToken',
         },
-        body: contentData.toJson()
+        body: contentData.toJsonWithoutId()
     );
     if (response.statusCode != 200){
       return false;
@@ -140,5 +140,18 @@ class BackendAPI{
         jsonDecode(response.body).map((i) =>
             ContentData.fromJson(i))
     );
+  }
+
+  Future<bool> deleteUserContent(String bearerToken, String username, int contentId) async {
+    var response = await http.delete(
+        Uri.parse(_baseURL + _getBaseContentUrl(username) + '/$contentId'),
+        headers: {
+          'Authorization': 'Bearer $bearerToken',
+        }
+    );
+    if (response.statusCode != 200){
+      return false;
+    }
+    return true;
   }
 }

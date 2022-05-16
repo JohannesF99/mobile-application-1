@@ -4,6 +4,8 @@ import 'package:mobileapplication1/model/ContentData.dart';
 import 'package:mobileapplication1/model/LoginData.dart';
 
 import '../main.dart';
+import '../utils/NoOverflowBehavior.dart';
+import 'CreateScreen.dart';
 import 'LoginScreen.dart';
 import '../utils/StoreManager.dart';
 import 'UserScreen.dart';
@@ -196,41 +198,59 @@ class _ContentScreenState extends State<ContentScreen> {
           )
         ],
       ),
-      body: Center(
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height - 100, // card height
-          child: PageView.builder(
-            itemCount: userContent.length,
-            controller: PageController(viewportFraction: 0.7),
-            onPageChanged: (int index) => setState(() => _index = index),
-            reverse: true,
-            itemBuilder: (_, i) {
-              return Transform.scale(
-                scale: i == _index ? 1 : 0.9,
-                child: Card(
-                  elevation: 6,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  child: Center(
-                    child: Text(
-                      userContent[i].caption,
-                      style: const TextStyle(fontSize: 32),
-                    ),
+      body: ScrollConfiguration(
+        behavior: NoOverflowBehavior(),
+        child: Center(
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height - 100, // card height
+            child: PageView.builder(
+              itemCount: userContent.length,
+              controller: PageController(viewportFraction: 0.7),
+              onPageChanged: (int index) => setState(() => _index = index),
+              reverse: true,
+              itemBuilder: (_, i) {
+                return Transform.scale(
+                  scale: i == _index ? 1 : 0.9,
+                  child: Card(
+                    elevation: 6,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Center(
+                          child: Text(
+                            userContent[i].caption,
+                            style: const TextStyle(fontSize: 32),
+                          ),
+                        ),
+                        IconButton(
+                            onPressed: () async {
+                              final token = await StorageManager.readData("token");
+                              final username = await StorageManager.readData("username");
+                              final contentId = userContent[i].contentId;
+                              BackendAPI().deleteUserContent(token, username, contentId!).then((value) => _getContent());
+                            },
+                            icon: const Icon(Icons.delete_sweep_outlined)
+                        ),
+                      ],
+                    )
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.plus_one),
         onPressed: () async {
-          final token = await StorageManager.readData("token");
-          final username = await StorageManager.readData("username");
-          final content = ContentData("caption");
-          BackendAPI().sendNewPost(token, username, content).then((value) =>
-              _getContent()
+          final result = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const CreateScreen())
           );
+          if (result) {
+            _getContent();
+          }
         },
       ),
     );

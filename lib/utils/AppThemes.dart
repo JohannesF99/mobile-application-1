@@ -34,7 +34,6 @@ class AppThemes{
   /// Deklariert als statische Variable, sodass kein Objekt der Klasse benötigt
   /// wird, um auf das Thema zuzugreifen.
   static final darkTheme = ThemeData(
-      primarySwatch: Colors.red,
       brightness: Brightness.dark,
       iconTheme: const IconThemeData(color: Colors.white),
       appBarTheme: AppBarTheme(
@@ -53,6 +52,14 @@ class AppThemes{
         bodyMedium: TextStyle(
           fontSize: 20
         )
-      )
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: Colors.red
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            primary: Colors.red
+          )
+      ),
   );
 }
