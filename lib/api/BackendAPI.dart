@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:mobileapplication1/enum/Gender.dart';
+import 'package:mobileapplication1/model/InteractionData.dart';
 import 'package:mobileapplication1/model/LoginData.dart';
 import 'package:mobileapplication1/model/UserData.dart';
 
@@ -21,6 +22,7 @@ class BackendAPI{
   final String _deleteUser = "/api/v1/account";
   String _getUserDataUrl(String username) => "/api/v1/user/$username";
   String _getBaseContentUrl(String username) => "/api/v1/user/$username/content";
+  String _getBaseInteractionUrl(String username) => "/api/v1/user/$username/interaction";
 
   /// Übernimmt die Benutzerdaten und registriert den Benutzer im Backend.
   /// Sollte der Status-Code nicht "200 (OK)" sein, so wird eine Fehlermeldung
@@ -145,6 +147,45 @@ class BackendAPI{
   Future<bool> deleteUserContent(String bearerToken, String username, int contentId) async {
     var response = await http.delete(
         Uri.parse(_baseURL + _getBaseContentUrl(username) + '/$contentId'),
+        headers: {
+          'Authorization': 'Bearer $bearerToken',
+        }
+    );
+    if (response.statusCode != 200){
+      return false;
+    }
+    return true;
+  }
+
+  Future<InteractionData?> getInteractionDataForContent(String bearerToken, String username, int contentId) async {
+    var response = await http.get(
+        Uri.parse(_baseURL + _getBaseInteractionUrl(username) + '/$contentId'),
+        headers: {
+          'Authorization': 'Bearer $bearerToken',
+        }
+    );
+    if (response.statusCode != 200){
+      return null;
+    }
+    return InteractionData.fromJson(jsonDecode(response.body));
+  }
+
+  Future<bool> likeContent(String bearerToken, String username, int contentId) async {
+    var response = await http.post(
+        Uri.parse(_baseURL + _getBaseInteractionUrl(username) + '/$contentId/like'),
+        headers: {
+          'Authorization': 'Bearer $bearerToken',
+        }
+    );
+    if (response.statusCode != 200){
+      return false;
+    }
+    return true;
+  }
+
+  Future<bool> dislikeContent(String bearerToken, String username, int contentId) async {
+    var response = await http.post(
+        Uri.parse(_baseURL + _getBaseInteractionUrl(username) + '/$contentId/dislike'),
         headers: {
           'Authorization': 'Bearer $bearerToken',
         }

@@ -223,15 +223,47 @@ class _ContentScreenState extends State<ContentScreen> {
                             style: const TextStyle(fontSize: 32),
                           ),
                         ),
-                        IconButton(
-                            onPressed: () async {
-                              final token = await StorageManager.readData("token");
-                              final username = await StorageManager.readData("username");
-                              final contentId = userContent[i].contentId;
-                              BackendAPI().deleteUserContent(token, username, contentId!).then((value) => _getContent());
-                            },
-                            icon: const Icon(Icons.delete_sweep_outlined)
+                        Row(
+                          children: [
+                            IconButton(
+                                onPressed: () async {
+                                  final token = await StorageManager.readData("token");
+                                  final username = await StorageManager.readData("username");
+                                  final contentId = userContent[i].contentId!;
+                                  await BackendAPI().likeContent(token, username, contentId)
+                                      .whenComplete(() => _getContent());
+                                },
+                                icon: const Icon(Icons.keyboard_arrow_up)
+                            ),
+                            IconButton(
+                                onPressed: () async {
+                                  final token = await StorageManager.readData("token");
+                                  final username = await StorageManager.readData("username");
+                                  final contentId = userContent[i].contentId!;
+                                  await BackendAPI().dislikeContent(token, username, contentId)
+                                      .whenComplete(() => _getContent());
+                                },
+                                icon: const Icon(Icons.keyboard_arrow_down)
+                            ),
+                            const Spacer(),
+                            IconButton(
+                                onPressed: () async {
+                                  final token = await StorageManager.readData("token");
+                                  final username = await StorageManager.readData("username");
+                                  final contentId = userContent[i].contentId!;
+                                  BackendAPI().deleteUserContent(token, username, contentId).then((value) => _getContent());
+                                },
+                                icon: const Icon(Icons.delete_sweep_outlined)
+                            ),
+                          ],
                         ),
+                        Row(
+                          children: [
+                            Text("${userContent[i].interactionData?.likes}"),
+                            Text("${userContent[i].interactionData?.dislikes}"),
+                            const Spacer(),
+                          ],
+                        )
                       ],
                     )
                   ),
@@ -284,6 +316,13 @@ class _ContentScreenState extends State<ContentScreen> {
     final token = await StorageManager.readData("token");
     final username = await StorageManager.readData("username");
     final list = await BackendAPI().getUserContent(token, username);
+    for (var element in list) {
+      element.interactionData = await BackendAPI().getInteractionDataForContent(
+          token,
+          username,
+          element.contentId!
+      );
+    }
     setState(() {
       userContent = list;
     });
