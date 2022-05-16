@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobileapplication1/api/BackendAPI.dart';
+import 'package:mobileapplication1/model/ContentData.dart';
 import 'package:mobileapplication1/model/LoginData.dart';
 
 import '../main.dart';
@@ -21,6 +22,14 @@ class _ContentScreenState extends State<ContentScreen> {
   /// Beschreibt den Modus des App-Themas.
   bool _darkMode = false;
   final passwordController = TextEditingController();
+  var _index = 0;
+  List<ContentData> userContent = [];
+
+  @override
+  void initState() {
+    _getContent();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,9 +84,7 @@ class _ContentScreenState extends State<ContentScreen> {
                   ),
                 ],
               ),
-              onTap: () async {
-                _logoutUser();
-              },
+              onTap: _tryLogout,
             ),
             ListTile(
               title: Row(
@@ -166,6 +173,12 @@ class _ContentScreenState extends State<ContentScreen> {
         actions: <Widget>[
           IconButton(
             icon: const Icon(
+              Icons.download,
+            ),
+            onPressed: _getContent,
+          ),
+          IconButton(
+            icon: const Icon(
               Icons.help_outline,
             ),
             onPressed: () {
@@ -183,14 +196,52 @@ class _ContentScreenState extends State<ContentScreen> {
           )
         ],
       ),
-      body: const Center(
-          child: Text("Hallo!")
+      body: Center(
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height - 100, // card height
+          child: PageView.builder(
+            itemCount: userContent.length,
+            controller: PageController(viewportFraction: 0.7),
+            onPageChanged: (int index) => setState(() => _index = index),
+            reverse: true,
+            itemBuilder: (_, i) {
+              return Transform.scale(
+                scale: i == _index ? 1 : 0.9,
+                child: Card(
+                  elevation: 6,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  child: Center(
+                    child: Text(
+                      userContent[i].caption,
+                      style: const TextStyle(fontSize: 32),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.plus_one),
+        onPressed: () async {
+          final token = await StorageManager.readData("token");
+          final username = await StorageManager.readData("username");
+          final content = ContentData("caption");
+          BackendAPI().sendNewPost(token, username, content).then((value) =>
+              _getContent()
+          );
+        },
       ),
     );
   }
 
-  Future<void> _logoutUser() async {
-    var value = await StorageManager.readData("token");
+  /// Lädt den Login-Token aus den Shared Preferences und versucht den Benutzer
+  /// damit abzumelden.
+  /// Anschließend wird der gesammte Speicher der Shared Preferences gelöscht
+  /// und der Navigator-Stack aktualisiert.
+  void _tryLogout() async {
+    final value = await StorageManager.readData("token");
     BackendAPI().logoutUser(value);
     StorageManager.clearAll();
     Navigator.pop(context);
@@ -207,5 +258,14 @@ class _ContentScreenState extends State<ContentScreen> {
     } else {
       MyApp.of(context)!.changeTheme(ThemeMode.light);
     }
+  }
+
+  _getContent() async {
+    final token = await StorageManager.readData("token");
+    final username = await StorageManager.readData("username");
+    final list = await BackendAPI().getUserContent(token, username);
+    setState(() {
+      userContent = list;
+    });
   }
 }
