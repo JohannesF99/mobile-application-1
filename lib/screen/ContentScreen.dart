@@ -251,7 +251,6 @@ class _ContentScreenState extends State<ContentScreen> {
                                       userContent[i].interactionData!.myInteraction = Interaction.None;
                                     }
                                   }
-
                                   setState(() {});
                                 },
                                 icon: const Icon(Icons.keyboard_arrow_up),
