@@ -23,6 +23,8 @@ class ContentData {
   }.toString();
 
   String toJsonWithoutId() => {
-    '"caption"': '"$caption"',
+    '"caption"': '"$caption"'
+        .trim()
+        .replaceAll("\n", "\\n"),
   }.toString();
 }
