@@ -227,9 +227,8 @@ class _ContentScreenState extends State<ContentScreen> {
                       children: [
                         Container(
                           padding: const EdgeInsets.all(10),
-                          child: Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   "Johannes",
@@ -240,11 +239,10 @@ class _ContentScreenState extends State<ContentScreen> {
                                   userContent[i].caption,
                                   style: Theme.of(context).textTheme.bodyMedium,
                                   overflow: TextOverflow.ellipsis,
-                                  maxLines: 8,
+                                  maxLines: 6,
                                 ),
                               ],
-                            ),
-                          )
+                          ),
                         ),
                         const Spacer(),
                         Row(
