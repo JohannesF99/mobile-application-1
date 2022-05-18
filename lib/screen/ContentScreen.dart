@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:mobileapplication1/api/BackendAPI.dart';
 import 'package:mobileapplication1/model/LoginData.dart';
 
+import '../enum/Interaction.dart';
 import '../main.dart';
+import '../model/ContentData.dart';
 import 'CreateScreen.dart';
 import 'LoginScreen.dart';
 import '../utils/StoreManager.dart';
@@ -23,6 +25,14 @@ class _ContentScreenState extends State<ContentScreen> {
   bool _darkMode = false;
   final _passwordController = TextEditingController();
   final _friendController = TextEditingController();
+  List<ContentData> friendContent = [];
+  var _index = 0;
+
+  @override
+  void initState() {
+    _getContent();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +88,7 @@ class _ContentScreenState extends State<ContentScreen> {
                         child: child,
                       ),
                     )
-                );
+                ).whenComplete(() => _getContent());
               },
             ),
             ListTile(
@@ -204,7 +214,9 @@ class _ContentScreenState extends State<ContentScreen> {
                           onPressed: () async {
                             final token = await StorageManager.readData("token");
                             final username = await StorageManager.readData("username");
-                            BackendAPI().addFriend(token, username, _friendController.text);
+                            BackendAPI().addFriend(token, username, _friendController.text)
+                                .whenComplete(() => _getContent());
+                            Navigator.pop(context);
                           },
                         ),
                       ],
@@ -215,7 +227,116 @@ class _ContentScreenState extends State<ContentScreen> {
           ),
         ],
       ),
-      body: null,
+      body: Center(
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height/3, // card height
+          child: PageView.builder(
+            itemCount: friendContent.length,
+            controller: PageController(viewportFraction: 0.7),
+            onPageChanged: (int index) => setState(() => _index = index),
+            reverse: true,
+            itemBuilder: (_, i) {
+              return Transform.scale(
+                scale: i == _index ? 1 : 0.9,
+                child: Card(
+                    elevation: 6,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Test",
+                                style: Theme.of(context).textTheme.headline6,
+                              ),
+                              const Divider(),
+                              Text(
+                                friendContent[i].caption,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 6,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Spacer(),
+                        Row(
+                          children: [
+                            IconButton(
+                              onPressed: () async {
+                                final token = await StorageManager.readData("token");
+                                final username = await StorageManager.readData("username");
+                                final contentId = friendContent[i].contentId!;
+                                if (friendContent[i].interactionData!.myInteraction == Interaction.Dislike || friendContent[i].interactionData!.myInteraction == Interaction.None) {
+                                  final result = await BackendAPI().likeContent(token, username, contentId);
+                                  if (result && friendContent[i].interactionData!.myInteraction == Interaction.Dislike) {
+                                    friendContent[i].interactionData!.likes++;
+                                    friendContent[i].interactionData!.dislikes--;
+                                    friendContent[i].interactionData!.myInteraction = Interaction.Like;
+                                  } else if (result && friendContent[i].interactionData!.myInteraction == Interaction.None) {
+                                    friendContent[i].interactionData!.likes++;
+                                    friendContent[i].interactionData!.myInteraction = Interaction.Like;
+                                  }
+                                } else {
+                                  final result = await BackendAPI().removeInteraction(token, username, contentId);
+                                  if (result && friendContent[i].interactionData!.myInteraction == Interaction.Dislike) {
+                                    friendContent[i].interactionData!.dislikes--;
+                                    friendContent[i].interactionData!.myInteraction = Interaction.None;
+                                  } else if (result && friendContent[i].interactionData!.myInteraction == Interaction.Like) {
+                                    friendContent[i].interactionData!.likes--;
+                                    friendContent[i].interactionData!.myInteraction = Interaction.None;
+                                  }
+                                }
+                                setState(() {});
+                              },
+                              icon: const Icon(Icons.keyboard_arrow_up),
+                              color: _getColor(i, Interaction.Like),
+                            ),
+                            Text("${friendContent[i].interactionData!.likes - friendContent[i].interactionData!.dislikes}"),
+                            IconButton(
+                              onPressed: () async {
+                                final token = await StorageManager.readData("token");
+                                final username = await StorageManager.readData("username");
+                                final contentId = friendContent[i].contentId!;
+                                if (friendContent[i].interactionData!.myInteraction == Interaction.Like || friendContent[i].interactionData!.myInteraction == Interaction.None) {
+                                  final result = await BackendAPI().dislikeContent(token, username, contentId);
+                                  if (result && friendContent[i].interactionData!.myInteraction == Interaction.Like) {
+                                    friendContent[i].interactionData!.likes--;
+                                    friendContent[i].interactionData!.dislikes++;
+                                    friendContent[i].interactionData!.myInteraction = Interaction.Dislike;
+                                  } else if (result && friendContent[i].interactionData!.myInteraction == Interaction.None) {
+                                    friendContent[i].interactionData!.dislikes++;
+                                    friendContent[i].interactionData!.myInteraction = Interaction.Dislike;
+                                  }
+                                } else {
+                                  final result = await BackendAPI().removeInteraction(token, username, contentId);
+                                  if (result && friendContent[i].interactionData!.myInteraction == Interaction.Dislike) {
+                                    friendContent[i].interactionData!.dislikes--;
+                                    friendContent[i].interactionData!.myInteraction = Interaction.None;
+                                  } else if (result && friendContent[i].interactionData!.myInteraction == Interaction.Like) {
+                                    friendContent[i].interactionData!.likes--;
+                                    friendContent[i].interactionData!.myInteraction = Interaction.None;
+                                  }
+                                }
+                                setState(() {});
+                              },
+                              icon: const Icon(Icons.keyboard_arrow_down),
+                              color: _getColor(i, Interaction.Dislike),
+                            ),
+                          ],
+                        ),
+                      ],
+                    )
+                ),
+              );
+            },
+          ),
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.plus_one),
         onPressed: () async {
@@ -253,5 +374,28 @@ class _ContentScreenState extends State<ContentScreen> {
     } else {
       MyApp.of(context)!.changeTheme(ThemeMode.light);
     }
+  }
+
+  _getContent() async {
+    final token = await StorageManager.readData("token");
+    final username = await StorageManager.readData("username");
+    final list = await BackendAPI().getFriendsContent(token, username);
+    for (var element in list) {
+      element.interactionData = await BackendAPI().getInteractionDataForContent(
+          token,
+          username,
+          element.contentId!
+      );
+    }
+    setState(() {
+      friendContent = list;
+    });
+  }
+
+  Color _getColor(int i, Interaction interaction) {
+    if (interaction == friendContent[i].interactionData!.myInteraction){
+      return Theme.of(context).primaryColor;
+    }
+    return Theme.of(context).backgroundColor;
   }
 }

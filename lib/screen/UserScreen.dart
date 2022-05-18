@@ -23,8 +23,8 @@ class _UserScreen extends State<UserScreen>{
   final vornameController = TextEditingController();
   late UserData userData;
   List<ContentData> userContent = [];
-  bool showEdit = false;
   var _index = 0;
+  bool showEdit = false;
   List<String> friendsList = [];
 
   @override

@@ -253,4 +253,20 @@ class BackendAPI{
     }
     return List<String>.from(json.decode(response.body));
   }
+
+  Future<List<ContentData>> getFriendsContent(String bearerToken, String username) async {
+    var response = await http.get(
+        Uri.parse(_baseURL + _getBaseContentUrl(username) + '/friends'),
+        headers: {
+          'Authorization': 'Bearer $bearerToken',
+        }
+    );
+    if (response.statusCode != 200){
+      return [];
+    }
+    return List<ContentData>.from(
+        jsonDecode(response.body).map((i) =>
+            ContentData.fromJson(i))
+    );
+  }
 }
