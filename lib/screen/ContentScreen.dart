@@ -25,6 +25,7 @@ class _ContentScreenState extends State<ContentScreen> {
   /// Beschreibt den Modus des App-Themas.
   bool _darkMode = false;
   final passwordController = TextEditingController();
+  final textController = TextEditingController();
   var _index = 0;
   List<ContentData> userContent = [];
 
@@ -197,28 +198,19 @@ class _ContentScreenState extends State<ContentScreen> {
           ),
           IconButton(
             icon: const Icon(
-              Icons.help_outline,
+              Icons.search,
             ),
-            onPressed: () {
-              showDialog(context: context, builder: (BuildContext context) =>
-              const AlertDialog(
-                  title: Text("Über Die App"),
-                  content: Text(
-                  "Diese App ermöglicht Ihnen eine Account-Verwaltung!\n\n"
-                  "\"Register\":\nErstellen Sie ein Konto!\n\n"
-                  "\"Login\":\n Melden Sie sich auf Ihrem Konto an!\n\n"
-                  "\"Logout\":\n Melden Sie sich von Ihrem Konto ab!"),
-                )
-              );
+            onPressed: (){
+
             },
-          )
+          ),
         ],
       ),
       body: ScrollConfiguration(
         behavior: NoOverflowBehavior(),
         child: Center(
           child: SizedBox(
-            height: MediaQuery.of(context).size.height - 100, // card height
+            height: MediaQuery.of(context).size.height/3, // card height
             child: PageView.builder(
               itemCount: userContent.length,
               controller: PageController(viewportFraction: 0.7),
@@ -231,14 +223,30 @@ class _ContentScreenState extends State<ContentScreen> {
                     elevation: 6,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Center(
-                          child: Text(
-                            userContent[i].caption,
-                            style: const TextStyle(fontSize: 32),
-                          ),
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          child: Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Johannes",
+                                  style: Theme.of(context).textTheme.headline6,
+                                ),
+                                const Divider(),
+                                Text(
+                                  userContent[i].caption,
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 8,
+                                ),
+                              ],
+                            ),
+                          )
                         ),
+                        const Spacer(),
                         Row(
                           children: [
                             IconButton(

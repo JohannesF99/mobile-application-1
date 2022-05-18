@@ -14,9 +14,10 @@ class UserScreen extends StatefulWidget {
   State<UserScreen> createState() => _UserScreen();
 }
 
-class _UserScreen extends State<UserScreen> {
+class _UserScreen extends State<UserScreen> with TickerProviderStateMixin{
 
   late UserData userData;
+  late TabController _tabController;
   bool showEdit = false;
   final nameController = TextEditingController();
   final vornameController = TextEditingController();
@@ -24,6 +25,7 @@ class _UserScreen extends State<UserScreen> {
   @override
   void initState() {
     userData = widget.userData;
+    _tabController = TabController(length: 2, vsync: this);
     super.initState();
   }
 
@@ -42,36 +44,49 @@ class _UserScreen extends State<UserScreen> {
           title: const Text("Benutzer"),
           actions: getEditOrSaveButton(),
           automaticallyImplyLeading: true,
+          bottom: TabBar(
+            controller: _tabController,
+            tabs: const [
+              Tab(text: "Foo"),
+              Tab(text: "Bar",),
+            ],
+          ),
         ),
-        body: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        body: TabBarView(
+          controller: _tabController,
           children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text("Username:"),
-                Text("E-Mail:"),
-                Text("Name:"),
-                Text("Vorname:"),
-                Text("Geschlecht:"),
-                Text("Geburtstag:"),
-              ],
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.end,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(userData.username),
-                Text(userData.email),
-                getTextOrEditWidget(userData.name ?? "null", nameController),
-                getTextOrEditWidget(userData.vorname ?? "null", vornameController),
-                getTextOrDropdownWidget(userData.gender.name),
-                getTextOrDatePickerWidget(userData.getBirthday()),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text("Username:"),
+                    Text("E-Mail:"),
+                    Text("Name:"),
+                    Text("Vorname:"),
+                    Text("Geschlecht:"),
+                    Text("Geburtstag:"),
+                  ],
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(userData.username),
+                    Text(userData.email),
+                    getTextOrEditWidget(userData.name ?? "null", nameController),
+                    getTextOrEditWidget(userData.vorname ?? "null", vornameController),
+                    getTextOrDropdownWidget(userData.gender.name),
+                    getTextOrDatePickerWidget(userData.getBirthday()),
+                  ],
+                ),
               ],
             ),
+            const Text("data"),
           ],
-        ),
+        )
     );
   }
 

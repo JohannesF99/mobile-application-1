@@ -25,7 +25,7 @@ class AppThemes{
       ),
       textTheme: const TextTheme(
           bodyMedium: TextStyle(
-              fontSize: 20
+              fontSize: 15
           )
       )
   );
@@ -50,7 +50,7 @@ class AppThemes{
       ),
       textTheme: const TextTheme(
         bodyMedium: TextStyle(
-          fontSize: 20
+          fontSize: 15
         )
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
