@@ -21,8 +21,8 @@ class _ContentScreenState extends State<ContentScreen> {
 
   /// Beschreibt den Modus des App-Themas.
   bool _darkMode = false;
-  final passwordController = TextEditingController();
-  final textController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _friendController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +117,7 @@ class _ContentScreenState extends State<ContentScreen> {
                             border: OutlineInputBorder(),
                             hintText: 'Password',
                           ),
-                          controller: passwordController,
+                          controller: _passwordController,
                           obscureText: true,
                         ),
                         TextButton(
@@ -128,7 +128,7 @@ class _ContentScreenState extends State<ContentScreen> {
                             var user = LoginData(
                                 "",
                                 username,
-                                passwordController.text
+                                _passwordController.text
                             );
                             if (await BackendAPI().deleteUser(user, bearerToken)){
                               StorageManager.clearAll();
@@ -184,7 +184,33 @@ class _ContentScreenState extends State<ContentScreen> {
               Icons.search,
             ),
             onPressed: (){
-
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text("Freund hinzufügen:"),
+                      content: TextFormField(
+                        controller: _friendController,
+                      ),
+                      actions: [
+                        TextButton(
+                            child: const Text('Close'),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                        ),
+                        TextButton(
+                          child: const Text('Add Friend'),
+                          onPressed: () async {
+                            final token = await StorageManager.readData("token");
+                            final username = await StorageManager.readData("username");
+                            BackendAPI().addFriend(token, username, _friendController.text);
+                          },
+                        ),
+                      ],
+                    );
+                  },
+              );
             },
           ),
         ],

@@ -23,6 +23,7 @@ class BackendAPI{
   String _getUserDataUrl(String username) => "/api/v1/user/$username";
   String _getBaseContentUrl(String username) => "/api/v1/user/$username/content";
   String _getBaseInteractionUrl(String username) => "/api/v1/user/$username/interaction";
+  String _getBaseFriendsUrl(String username) => "/api/v1/user/$username/friend";
 
   /// Übernimmt die Benutzerdaten und registriert den Benutzer im Backend.
   /// Sollte der Status-Code nicht "200 (OK)" sein, so wird eine Fehlermeldung
@@ -207,5 +208,49 @@ class BackendAPI{
       return false;
     }
     return true;
+  }
+
+  Future<bool> addFriend(String bearerToken, String username, String friendName) async {
+    var response = await http.post(
+        Uri.parse(_baseURL + _getBaseFriendsUrl(username)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $bearerToken',
+        },
+      body: friendName
+    );
+    if (response.statusCode != 200){
+      return false;
+    }
+    return true;
+  }
+
+  Future<bool> removeFriend(String bearerToken, String username, String friendName) async {
+    var response = await http.delete(
+        Uri.parse(_baseURL + _getBaseFriendsUrl(username)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $bearerToken',
+        },
+        body: friendName
+    );
+    if (response.statusCode != 200){
+      return false;
+    }
+    return true;
+  }
+
+  Future<List<String>> getFriendsList(String bearerToken, String username) async {
+    var response = await http.get(
+        Uri.parse(_baseURL + _getBaseFriendsUrl(username) + '/all'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $bearerToken',
+        }
+    );
+    if (response.statusCode != 200){
+      return [];
+    }
+    return List<String>.from(json.decode(response.body));
   }
 }

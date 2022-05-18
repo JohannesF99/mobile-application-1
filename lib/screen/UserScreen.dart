@@ -19,17 +19,19 @@ class UserScreen extends StatefulWidget {
 
 class _UserScreen extends State<UserScreen>{
 
-  late UserData userData;
-  bool showEdit = false;
   final nameController = TextEditingController();
   final vornameController = TextEditingController();
-  var _index = 0;
+  late UserData userData;
   List<ContentData> userContent = [];
+  bool showEdit = false;
+  var _index = 0;
+  List<String> friendsList = [];
 
   @override
   void initState() {
     userData = widget.userData;
     _getContent();
+    _getFriendsList();
     super.initState();
   }
 
@@ -77,7 +79,7 @@ class _UserScreen extends State<UserScreen>{
                   ],
                 ),
                 DefaultTabController(
-                  length: 2,
+                  length: 3,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
@@ -90,6 +92,7 @@ class _UserScreen extends State<UserScreen>{
                             tabs: const [
                               Tab(text: "Infos"),
                               Tab(text: "Posts"),
+                              Tab(text: "Freunde"),
                             ]
                         ),
                       ),
@@ -252,6 +255,31 @@ class _UserScreen extends State<UserScreen>{
                                   ),
                                 ),
                               ),
+                              ListView(
+                                padding: const EdgeInsets.all(0),
+                                children: friendsList.map((e) =>
+                                  Container(
+                                    padding: const EdgeInsets.only(left: 10, right: 10),
+                                    height: 50,
+                                    child: Row(
+                                      children: [
+                                        Text(e),
+                                        const Spacer(),
+                                        IconButton(
+                                          onPressed: () async {
+                                            final token = await StorageManager.readData("token");
+                                            final username = await StorageManager.readData("username");
+                                            BackendAPI().removeFriend(token, username, e);
+                                            friendsList.remove(e);
+                                            setState(() {});
+                                          },
+                                          icon: const Icon(Icons.cancel)
+                                        )
+                                      ],
+                                    )
+                                  ),
+                                ).toList(),
+                              ),
                             ]
                         ),
                       ),
@@ -263,6 +291,12 @@ class _UserScreen extends State<UserScreen>{
           ),
         )
     );
+  }
+
+  _getFriendsList() async {
+    final token = await StorageManager.readData("token");
+    final username = await StorageManager.readData("username");
+    friendsList = await BackendAPI().getFriendsList(token, username);
   }
 
   _getContent() async {
