@@ -3,7 +3,10 @@ import 'package:mobileapplication1/api/BackendAPI.dart';
 import 'package:mobileapplication1/utils/StoreManager.dart';
 
 import '../enum/Gender.dart';
+import '../enum/Interaction.dart';
+import '../model/ContentData.dart';
 import '../model/UserData.dart';
+import '../utils/NoOverflowBehavior.dart';
 
 class UserScreen extends StatefulWidget {
   const UserScreen({Key? key, required this.userData}) : super(key: key);
@@ -14,18 +17,19 @@ class UserScreen extends StatefulWidget {
   State<UserScreen> createState() => _UserScreen();
 }
 
-class _UserScreen extends State<UserScreen> with TickerProviderStateMixin{
+class _UserScreen extends State<UserScreen>{
 
   late UserData userData;
-  late TabController _tabController;
   bool showEdit = false;
   final nameController = TextEditingController();
   final vornameController = TextEditingController();
+  var _index = 0;
+  List<ContentData> userContent = [];
 
   @override
   void initState() {
     userData = widget.userData;
-    _tabController = TabController(length: 2, vsync: this);
+    _getContent();
     super.initState();
   }
 
@@ -40,54 +44,248 @@ class _UserScreen extends State<UserScreen> with TickerProviderStateMixin{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
         appBar: AppBar(
           title: const Text("Benutzer"),
           actions: getEditOrSaveButton(),
-          automaticallyImplyLeading: true,
-          bottom: TabBar(
-            controller: _tabController,
-            tabs: const [
-              Tab(text: "Foo"),
-              Tab(text: "Bar",),
-            ],
-          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          titleTextStyle: Theme.of(context).appBarTheme.titleTextStyle,
         ),
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+        body: ScrollConfiguration(
+          behavior: NoOverflowBehavior(),
+          child: SingleChildScrollView(
+            child: Column(
               children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text("Username:"),
-                    Text("E-Mail:"),
-                    Text("Name:"),
-                    Text("Vorname:"),
-                    Text("Geschlecht:"),
-                    Text("Geburtstag:"),
+                Stack(
+                  children: [
+                    const Image(
+                      image: AssetImage('images/settings.png'),
+                      fit: BoxFit.cover,
+                    ),
+                    Positioned(
+                      left: 10,
+                      bottom: 20,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(200.0),
+                        child: const Image(
+                          width: 100,
+                          image: AssetImage('images/profilbild.jpg'),
+                        ),
+                      ),
+                    )
                   ],
                 ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(userData.username),
-                    Text(userData.email),
-                    getTextOrEditWidget(userData.name ?? "null", nameController),
-                    getTextOrEditWidget(userData.vorname ?? "null", vornameController),
-                    getTextOrDropdownWidget(userData.gender.name),
-                    getTextOrDatePickerWidget(userData.getBirthday()),
-                  ],
+                DefaultTabController(
+                  length: 2,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Container(
+                        color: Theme.of(context).appBarTheme.backgroundColor,
+                        child: TabBar(
+                            labelColor: Theme.of(context).iconTheme.color,
+                            indicatorColor: Theme.of(context).iconTheme.color,
+                            unselectedLabelColor: Theme.of(context).appBarTheme.titleTextStyle!.color,
+                            tabs: const [
+                              Tab(text: "Infos"),
+                              Tab(text: "Posts"),
+                            ]
+                        ),
+                      ),
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height-260,
+                        child: TabBarView(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: const [
+                                      Text("Username:"),
+                                      Text("E-Mail:"),
+                                      Text("Name:"),
+                                      Text("Vorname:"),
+                                      Text("Geschlecht:"),
+                                      Text("Geburtstag:"),
+                                    ],
+                                  ),
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(userData.username),
+                                      Text(userData.email),
+                                      getTextOrEditWidget(userData.name ?? "null", nameController),
+                                      getTextOrEditWidget(userData.vorname ?? "null", vornameController),
+                                      getTextOrDropdownWidget(userData.gender.name),
+                                      getTextOrDatePickerWidget(userData.getBirthday()),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              Center(
+                                child: SizedBox(
+                                  height: MediaQuery.of(context).size.height/3, // card height
+                                  child: PageView.builder(
+                                    itemCount: userContent.length,
+                                    controller: PageController(viewportFraction: 0.7),
+                                    onPageChanged: (int index) => setState(() => _index = index),
+                                    reverse: true,
+                                    itemBuilder: (_, i) {
+                                      return Transform.scale(
+                                        scale: i == _index ? 1 : 0.9,
+                                        child: Card(
+                                            elevation: 6,
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Container(
+                                                  padding: const EdgeInsets.all(10),
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        userData.username,
+                                                        style: Theme.of(context).textTheme.headline6,
+                                                      ),
+                                                      const Divider(),
+                                                      Text(
+                                                        userContent[i].caption,
+                                                        style: Theme.of(context).textTheme.bodyMedium,
+                                                        overflow: TextOverflow.ellipsis,
+                                                        maxLines: 6,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                const Spacer(),
+                                                Row(
+                                                  children: [
+                                                    IconButton(
+                                                      onPressed: () async {
+                                                        final token = await StorageManager.readData("token");
+                                                        final username = await StorageManager.readData("username");
+                                                        final contentId = userContent[i].contentId!;
+                                                        if (userContent[i].interactionData!.myInteraction == Interaction.Dislike || userContent[i].interactionData!.myInteraction == Interaction.None) {
+                                                          final result = await BackendAPI().likeContent(token, username, contentId);
+                                                          if (result && userContent[i].interactionData!.myInteraction == Interaction.Dislike) {
+                                                            userContent[i].interactionData!.likes++;
+                                                            userContent[i].interactionData!.dislikes--;
+                                                            userContent[i].interactionData!.myInteraction = Interaction.Like;
+                                                          } else if (result && userContent[i].interactionData!.myInteraction == Interaction.None) {
+                                                            userContent[i].interactionData!.likes++;
+                                                            userContent[i].interactionData!.myInteraction = Interaction.Like;
+                                                          }
+                                                        } else {
+                                                          final result = await BackendAPI().removeInteraction(token, username, contentId);
+                                                          if (result && userContent[i].interactionData!.myInteraction == Interaction.Dislike) {
+                                                            userContent[i].interactionData!.dislikes--;
+                                                            userContent[i].interactionData!.myInteraction = Interaction.None;
+                                                          } else if (result && userContent[i].interactionData!.myInteraction == Interaction.Like) {
+                                                            userContent[i].interactionData!.likes--;
+                                                            userContent[i].interactionData!.myInteraction = Interaction.None;
+                                                          }
+                                                        }
+                                                        setState(() {});
+                                                      },
+                                                      icon: const Icon(Icons.keyboard_arrow_up),
+                                                      color: _getColor(i, Interaction.Like),
+                                                    ),
+                                                    Text("${userContent[i].interactionData!.likes - userContent[i].interactionData!.dislikes}"),
+                                                    IconButton(
+                                                      onPressed: () async {
+                                                        final token = await StorageManager.readData("token");
+                                                        final username = await StorageManager.readData("username");
+                                                        final contentId = userContent[i].contentId!;
+                                                        if (userContent[i].interactionData!.myInteraction == Interaction.Like || userContent[i].interactionData!.myInteraction == Interaction.None) {
+                                                          final result = await BackendAPI().dislikeContent(token, username, contentId);
+                                                          if (result && userContent[i].interactionData!.myInteraction == Interaction.Like) {
+                                                            userContent[i].interactionData!.likes--;
+                                                            userContent[i].interactionData!.dislikes++;
+                                                            userContent[i].interactionData!.myInteraction = Interaction.Dislike;
+                                                          } else if (result && userContent[i].interactionData!.myInteraction == Interaction.None) {
+                                                            userContent[i].interactionData!.dislikes++;
+                                                            userContent[i].interactionData!.myInteraction = Interaction.Dislike;
+                                                          }
+                                                        } else {
+                                                          final result = await BackendAPI().removeInteraction(token, username, contentId);
+                                                          if (result && userContent[i].interactionData!.myInteraction == Interaction.Dislike) {
+                                                            userContent[i].interactionData!.dislikes--;
+                                                            userContent[i].interactionData!.myInteraction = Interaction.None;
+                                                          } else if (result && userContent[i].interactionData!.myInteraction == Interaction.Like) {
+                                                            userContent[i].interactionData!.likes--;
+                                                            userContent[i].interactionData!.myInteraction = Interaction.None;
+                                                          }
+                                                        }
+                                                        setState(() {});
+                                                      },
+                                                      icon: const Icon(Icons.keyboard_arrow_down),
+                                                      color: _getColor(i, Interaction.Dislike),
+                                                    ),
+                                                    const Spacer(),
+                                                    IconButton(
+                                                        onPressed: () async {
+                                                          final token = await StorageManager.readData("token");
+                                                          final username = await StorageManager.readData("username");
+                                                          final contentId = userContent[i].contentId!;
+                                                          final result = await BackendAPI().deleteUserContent(token, username, contentId);
+                                                          if (result) {
+                                                            setState(() {
+                                                              userContent.removeAt(i);
+                                                              _index--;
+                                                            });
+                                                          }
+                                                        },
+                                                        icon: const Icon(Icons.delete_sweep_outlined)
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            )
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ]
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-            const Text("data"),
-          ],
+          ),
         )
     );
+  }
+
+  _getContent() async {
+    final token = await StorageManager.readData("token");
+    final username = await StorageManager.readData("username");
+    final list = await BackendAPI().getUserContent(token, username);
+    for (var element in list) {
+      element.interactionData = await BackendAPI().getInteractionDataForContent(
+          token,
+          username,
+          element.contentId!
+      );
+    }
+    setState(() {
+      userContent = list;
+    });
+  }
+
+  Color _getColor(int i, Interaction interaction) {
+    if (interaction == userContent[i].interactionData!.myInteraction){
+      return Theme.of(context).primaryColor;
+    }
+    return Theme.of(context).backgroundColor;
   }
 
   Widget getTextOrEditWidget(String value, TextEditingController textController){

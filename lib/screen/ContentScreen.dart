@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobileapplication1/api/BackendAPI.dart';
-import 'package:mobileapplication1/enum/Interaction.dart';
-import 'package:mobileapplication1/model/ContentData.dart';
 import 'package:mobileapplication1/model/LoginData.dart';
 
 import '../main.dart';
-import '../utils/NoOverflowBehavior.dart';
 import 'CreateScreen.dart';
 import 'LoginScreen.dart';
 import '../utils/StoreManager.dart';
@@ -26,14 +23,6 @@ class _ContentScreenState extends State<ContentScreen> {
   bool _darkMode = false;
   final passwordController = TextEditingController();
   final textController = TextEditingController();
-  var _index = 0;
-  List<ContentData> userContent = [];
-
-  @override
-  void initState() {
-    _getContent();
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -192,12 +181,6 @@ class _ContentScreenState extends State<ContentScreen> {
         actions: <Widget>[
           IconButton(
             icon: const Icon(
-              Icons.download,
-            ),
-            onPressed: _getContent,
-          ),
-          IconButton(
-            icon: const Icon(
               Icons.search,
             ),
             onPressed: (){
@@ -206,135 +189,7 @@ class _ContentScreenState extends State<ContentScreen> {
           ),
         ],
       ),
-      body: ScrollConfiguration(
-        behavior: NoOverflowBehavior(),
-        child: Center(
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height/3, // card height
-            child: PageView.builder(
-              itemCount: userContent.length,
-              controller: PageController(viewportFraction: 0.7),
-              onPageChanged: (int index) => setState(() => _index = index),
-              reverse: true,
-              itemBuilder: (_, i) {
-                return Transform.scale(
-                  scale: i == _index ? 1 : 0.9,
-                  child: Card(
-                    elevation: 6,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Johannes",
-                                  style: Theme.of(context).textTheme.headline6,
-                                ),
-                                const Divider(),
-                                Text(
-                                  userContent[i].caption,
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 6,
-                                ),
-                              ],
-                          ),
-                        ),
-                        const Spacer(),
-                        Row(
-                          children: [
-                            IconButton(
-                                onPressed: () async {
-                                  final token = await StorageManager.readData("token");
-                                  final username = await StorageManager.readData("username");
-                                  final contentId = userContent[i].contentId!;
-                                  if (userContent[i].interactionData!.myInteraction == Interaction.Dislike || userContent[i].interactionData!.myInteraction == Interaction.None) {
-                                    final result = await BackendAPI().likeContent(token, username, contentId);
-                                    if (result && userContent[i].interactionData!.myInteraction == Interaction.Dislike) {
-                                      userContent[i].interactionData!.likes++;
-                                      userContent[i].interactionData!.dislikes--;
-                                      userContent[i].interactionData!.myInteraction = Interaction.Like;
-                                    } else if (result && userContent[i].interactionData!.myInteraction == Interaction.None) {
-                                      userContent[i].interactionData!.likes++;
-                                      userContent[i].interactionData!.myInteraction = Interaction.Like;
-                                    }
-                                  } else {
-                                    final result = await BackendAPI().removeInteraction(token, username, contentId);
-                                    if (result && userContent[i].interactionData!.myInteraction == Interaction.Dislike) {
-                                      userContent[i].interactionData!.dislikes--;
-                                      userContent[i].interactionData!.myInteraction = Interaction.None;
-                                    } else if (result && userContent[i].interactionData!.myInteraction == Interaction.Like) {
-                                      userContent[i].interactionData!.likes--;
-                                      userContent[i].interactionData!.myInteraction = Interaction.None;
-                                    }
-                                  }
-                                  setState(() {});
-                                },
-                                icon: const Icon(Icons.keyboard_arrow_up),
-                                color: _getColor(i, Interaction.Like),
-                            ),
-                            Text("${userContent[i].interactionData!.likes - userContent[i].interactionData!.dislikes}"),
-                            IconButton(
-                                onPressed: () async {
-                                  final token = await StorageManager.readData("token");
-                                  final username = await StorageManager.readData("username");
-                                  final contentId = userContent[i].contentId!;
-                                  if (userContent[i].interactionData!.myInteraction == Interaction.Like || userContent[i].interactionData!.myInteraction == Interaction.None) {
-                                    final result = await BackendAPI().dislikeContent(token, username, contentId);
-                                    if (result && userContent[i].interactionData!.myInteraction == Interaction.Like) {
-                                      userContent[i].interactionData!.likes--;
-                                      userContent[i].interactionData!.dislikes++;
-                                      userContent[i].interactionData!.myInteraction = Interaction.Dislike;
-                                    } else if (result && userContent[i].interactionData!.myInteraction == Interaction.None) {
-                                      userContent[i].interactionData!.dislikes++;
-                                      userContent[i].interactionData!.myInteraction = Interaction.Dislike;
-                                    }
-                                  } else {
-                                    final result = await BackendAPI().removeInteraction(token, username, contentId);
-                                    if (result && userContent[i].interactionData!.myInteraction == Interaction.Dislike) {
-                                      userContent[i].interactionData!.dislikes--;
-                                      userContent[i].interactionData!.myInteraction = Interaction.None;
-                                    } else if (result && userContent[i].interactionData!.myInteraction == Interaction.Like) {
-                                      userContent[i].interactionData!.likes--;
-                                      userContent[i].interactionData!.myInteraction = Interaction.None;
-                                    }
-                                  }
-                                  setState(() {});
-                                },
-                                icon: const Icon(Icons.keyboard_arrow_down),
-                                color: _getColor(i, Interaction.Dislike),
-                            ),
-                            const Spacer(),
-                            IconButton(
-                                onPressed: () async {
-                                  final token = await StorageManager.readData("token");
-                                  final username = await StorageManager.readData("username");
-                                  final contentId = userContent[i].contentId!;
-                                  final result = await BackendAPI().deleteUserContent(token, username, contentId);
-                                  if (result) {
-                                    setState(() {
-                                      userContent.removeAt(i);
-                                      _index--;
-                                    });
-                                  }
-                                },
-                                icon: const Icon(Icons.delete_sweep_outlined)
-                            ),
-                          ],
-                        ),
-                      ],
-                    )
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-      ),
+      body: null,
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.plus_one),
         onPressed: () async {
@@ -343,7 +198,7 @@ class _ContentScreenState extends State<ContentScreen> {
               MaterialPageRoute(builder: (context) => const CreateScreen())
           );
           if (result) {
-            _getContent();
+            //_getContent();
           }
         },
       ),
@@ -372,28 +227,5 @@ class _ContentScreenState extends State<ContentScreen> {
     } else {
       MyApp.of(context)!.changeTheme(ThemeMode.light);
     }
-  }
-
-  _getContent() async {
-    final token = await StorageManager.readData("token");
-    final username = await StorageManager.readData("username");
-    final list = await BackendAPI().getUserContent(token, username);
-    for (var element in list) {
-      element.interactionData = await BackendAPI().getInteractionDataForContent(
-          token,
-          username,
-          element.contentId!
-      );
-    }
-    setState(() {
-      userContent = list;
-    });
-  }
-
-  Color _getColor(int i, Interaction interaction) {
-    if (interaction == userContent[i].interactionData!.myInteraction){
-      return Theme.of(context).primaryColor;
-    }
-    return Theme.of(context).backgroundColor;
   }
 }
