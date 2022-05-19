@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobileapplication1/api/BackendAPI.dart';
 import 'package:mobileapplication1/model/LoginData.dart';
+import 'package:mobileapplication1/utils/NoOverflowBehavior.dart';
 
 import '../enum/Interaction.dart';
 import '../main.dart';
@@ -227,113 +228,124 @@ class _ContentScreenState extends State<ContentScreen> {
           ),
         ],
       ),
-      body: Center(
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height/3, // card height
-          child: PageView.builder(
-            itemCount: friendContent.length,
-            controller: PageController(viewportFraction: 0.7),
-            onPageChanged: (int index) => setState(() => _index = index),
-            reverse: true,
-            itemBuilder: (_, i) {
-              return Transform.scale(
-                scale: i == _index ? 1 : 0.9,
-                child: Card(
-                    elevation: 6,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+      body: ScrollConfiguration(
+        behavior: NoOverflowBehavior(),
+        child: Center(
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height/3, // card height
+            child: PageView.builder(
+              itemCount: friendContent.length,
+              controller: PageController(viewportFraction: 0.7),
+              onPageChanged: (int index) => setState(() => _index = index),
+              reverse: true,
+              itemBuilder: (_, i) {
+                return Transform.scale(
+                  scale: i == _index ? 1 : 0.9,
+                  child: Card(
+                      elevation: 6,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      friendContent[i].userData!.username,
+                                      style: Theme.of(context).textTheme.headline6,
+                                    ),
+                                    const Spacer(),
+                                    Text(
+                                        _getPostTime(friendContent[i].created)
+                                    )
+                                  ],
+                                ),
+                                const Divider(),
+                                Text(
+                                  friendContent[i].caption,
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 6,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Spacer(),
+                          Row(
                             children: [
-                              Text(
-                                "Test",
-                                style: Theme.of(context).textTheme.headline6,
+                              IconButton(
+                                onPressed: () async {
+                                  final token = await StorageManager.readData("token");
+                                  final username = await StorageManager.readData("username");
+                                  final contentId = friendContent[i].contentId!;
+                                  if (friendContent[i].interactionData!.myInteraction == Interaction.Dislike || friendContent[i].interactionData!.myInteraction == Interaction.None) {
+                                    final result = await BackendAPI().likeContent(token, username, contentId);
+                                    if (result && friendContent[i].interactionData!.myInteraction == Interaction.Dislike) {
+                                      friendContent[i].interactionData!.likes++;
+                                      friendContent[i].interactionData!.dislikes--;
+                                      friendContent[i].interactionData!.myInteraction = Interaction.Like;
+                                    } else if (result && friendContent[i].interactionData!.myInteraction == Interaction.None) {
+                                      friendContent[i].interactionData!.likes++;
+                                      friendContent[i].interactionData!.myInteraction = Interaction.Like;
+                                    }
+                                  } else {
+                                    final result = await BackendAPI().removeInteraction(token, username, contentId);
+                                    if (result && friendContent[i].interactionData!.myInteraction == Interaction.Dislike) {
+                                      friendContent[i].interactionData!.dislikes--;
+                                      friendContent[i].interactionData!.myInteraction = Interaction.None;
+                                    } else if (result && friendContent[i].interactionData!.myInteraction == Interaction.Like) {
+                                      friendContent[i].interactionData!.likes--;
+                                      friendContent[i].interactionData!.myInteraction = Interaction.None;
+                                    }
+                                  }
+                                  setState(() {});
+                                },
+                                icon: const Icon(Icons.keyboard_arrow_up),
+                                color: _getColor(i, Interaction.Like),
                               ),
-                              const Divider(),
-                              Text(
-                                friendContent[i].caption,
-                                style: Theme.of(context).textTheme.bodyMedium,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 6,
+                              Text("${friendContent[i].interactionData!.likes - friendContent[i].interactionData!.dislikes}"),
+                              IconButton(
+                                onPressed: () async {
+                                  final token = await StorageManager.readData("token");
+                                  final username = await StorageManager.readData("username");
+                                  final contentId = friendContent[i].contentId!;
+                                  if (friendContent[i].interactionData!.myInteraction == Interaction.Like || friendContent[i].interactionData!.myInteraction == Interaction.None) {
+                                    final result = await BackendAPI().dislikeContent(token, username, contentId);
+                                    if (result && friendContent[i].interactionData!.myInteraction == Interaction.Like) {
+                                      friendContent[i].interactionData!.likes--;
+                                      friendContent[i].interactionData!.dislikes++;
+                                      friendContent[i].interactionData!.myInteraction = Interaction.Dislike;
+                                    } else if (result && friendContent[i].interactionData!.myInteraction == Interaction.None) {
+                                      friendContent[i].interactionData!.dislikes++;
+                                      friendContent[i].interactionData!.myInteraction = Interaction.Dislike;
+                                    }
+                                  } else {
+                                    final result = await BackendAPI().removeInteraction(token, username, contentId);
+                                    if (result && friendContent[i].interactionData!.myInteraction == Interaction.Dislike) {
+                                      friendContent[i].interactionData!.dislikes--;
+                                      friendContent[i].interactionData!.myInteraction = Interaction.None;
+                                    } else if (result && friendContent[i].interactionData!.myInteraction == Interaction.Like) {
+                                      friendContent[i].interactionData!.likes--;
+                                      friendContent[i].interactionData!.myInteraction = Interaction.None;
+                                    }
+                                  }
+                                  setState(() {});
+                                },
+                                icon: const Icon(Icons.keyboard_arrow_down),
+                                color: _getColor(i, Interaction.Dislike),
                               ),
                             ],
                           ),
-                        ),
-                        const Spacer(),
-                        Row(
-                          children: [
-                            IconButton(
-                              onPressed: () async {
-                                final token = await StorageManager.readData("token");
-                                final username = await StorageManager.readData("username");
-                                final contentId = friendContent[i].contentId!;
-                                if (friendContent[i].interactionData!.myInteraction == Interaction.Dislike || friendContent[i].interactionData!.myInteraction == Interaction.None) {
-                                  final result = await BackendAPI().likeContent(token, username, contentId);
-                                  if (result && friendContent[i].interactionData!.myInteraction == Interaction.Dislike) {
-                                    friendContent[i].interactionData!.likes++;
-                                    friendContent[i].interactionData!.dislikes--;
-                                    friendContent[i].interactionData!.myInteraction = Interaction.Like;
-                                  } else if (result && friendContent[i].interactionData!.myInteraction == Interaction.None) {
-                                    friendContent[i].interactionData!.likes++;
-                                    friendContent[i].interactionData!.myInteraction = Interaction.Like;
-                                  }
-                                } else {
-                                  final result = await BackendAPI().removeInteraction(token, username, contentId);
-                                  if (result && friendContent[i].interactionData!.myInteraction == Interaction.Dislike) {
-                                    friendContent[i].interactionData!.dislikes--;
-                                    friendContent[i].interactionData!.myInteraction = Interaction.None;
-                                  } else if (result && friendContent[i].interactionData!.myInteraction == Interaction.Like) {
-                                    friendContent[i].interactionData!.likes--;
-                                    friendContent[i].interactionData!.myInteraction = Interaction.None;
-                                  }
-                                }
-                                setState(() {});
-                              },
-                              icon: const Icon(Icons.keyboard_arrow_up),
-                              color: _getColor(i, Interaction.Like),
-                            ),
-                            Text("${friendContent[i].interactionData!.likes - friendContent[i].interactionData!.dislikes}"),
-                            IconButton(
-                              onPressed: () async {
-                                final token = await StorageManager.readData("token");
-                                final username = await StorageManager.readData("username");
-                                final contentId = friendContent[i].contentId!;
-                                if (friendContent[i].interactionData!.myInteraction == Interaction.Like || friendContent[i].interactionData!.myInteraction == Interaction.None) {
-                                  final result = await BackendAPI().dislikeContent(token, username, contentId);
-                                  if (result && friendContent[i].interactionData!.myInteraction == Interaction.Like) {
-                                    friendContent[i].interactionData!.likes--;
-                                    friendContent[i].interactionData!.dislikes++;
-                                    friendContent[i].interactionData!.myInteraction = Interaction.Dislike;
-                                  } else if (result && friendContent[i].interactionData!.myInteraction == Interaction.None) {
-                                    friendContent[i].interactionData!.dislikes++;
-                                    friendContent[i].interactionData!.myInteraction = Interaction.Dislike;
-                                  }
-                                } else {
-                                  final result = await BackendAPI().removeInteraction(token, username, contentId);
-                                  if (result && friendContent[i].interactionData!.myInteraction == Interaction.Dislike) {
-                                    friendContent[i].interactionData!.dislikes--;
-                                    friendContent[i].interactionData!.myInteraction = Interaction.None;
-                                  } else if (result && friendContent[i].interactionData!.myInteraction == Interaction.Like) {
-                                    friendContent[i].interactionData!.likes--;
-                                    friendContent[i].interactionData!.myInteraction = Interaction.None;
-                                  }
-                                }
-                                setState(() {});
-                              },
-                              icon: const Icon(Icons.keyboard_arrow_down),
-                              color: _getColor(i, Interaction.Dislike),
-                            ),
-                          ],
-                        ),
-                      ],
-                    )
-                ),
-              );
-            },
+                        ],
+                      )
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -397,5 +409,25 @@ class _ContentScreenState extends State<ContentScreen> {
       return Theme.of(context).primaryColor;
     }
     return Theme.of(context).backgroundColor;
+  }
+
+  String _getPostTime(DateTime created) {
+    final min = DateTime.now().difference(created).inMinutes;
+    final h = min ~/ 60;
+    final days = h ~/ 24;
+    final mon = days ~/ 30;
+    if (mon >= 1) {
+      return "$mon Mo.";
+    }
+    if (days >= 1) {
+      return "$days Tage";
+    }
+    if (h >= 1) {
+      return "$h h";
+    }
+    if (min < 1) {
+      return "Jetzt";
+    }
+    return "$min min";
   }
 }

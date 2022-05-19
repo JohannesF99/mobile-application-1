@@ -19,12 +19,15 @@ class UserScreen extends StatefulWidget {
 
 class _UserScreen extends State<UserScreen>{
 
+  // Variablen für den Info-Tab
   final nameController = TextEditingController();
   final vornameController = TextEditingController();
+  bool showEdit = false;
   late UserData userData;
+  // Variablen für den Post-Tab
   List<ContentData> userContent = [];
   var _index = 0;
-  bool showEdit = false;
+  //Variablen für den Freunde-Tab
   List<String> friendsList = [];
 
   @override
@@ -151,9 +154,15 @@ class _UserScreen extends State<UserScreen>{
                                                   child: Column(
                                                     crossAxisAlignment: CrossAxisAlignment.start,
                                                     children: [
-                                                      Text(
-                                                        userData.username,
-                                                        style: Theme.of(context).textTheme.headline6,
+                                                      Row(
+                                                        children: [
+                                                          Text(
+                                                            userData.username,
+                                                            style: Theme.of(context).textTheme.headline6,
+                                                          ),
+                                                          const Spacer(),
+                                                          Text(_getPostTime(userContent[i].created)),
+                                                        ],
                                                       ),
                                                       const Divider(),
                                                       Text(
@@ -313,6 +322,26 @@ class _UserScreen extends State<UserScreen>{
     setState(() {
       userContent = list;
     });
+  }
+
+  String _getPostTime(DateTime created) {
+    final min = DateTime.now().difference(created).inMinutes;
+    final h = min ~/ 60;
+    final days = h ~/ 24;
+    final mon = days ~/ 30;
+    if (mon >= 1) {
+      return "$mon Mo.";
+    }
+    if (days >= 1) {
+      return "$days Tage";
+    }
+    if (h >= 1) {
+      return "$h h";
+    }
+    if (min < 1) {
+      return "Jetzt";
+    }
+    return "$min min";
   }
 
   Color _getColor(int i, Interaction interaction) {
