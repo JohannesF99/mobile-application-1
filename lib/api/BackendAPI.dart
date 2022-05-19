@@ -269,4 +269,19 @@ class BackendAPI{
             ContentData.fromJson(i))
     );
   }
+
+  Future<bool> changeContent(String bearerToken, String username, int contentId, String text) async {
+    var response = await http.put(
+        Uri.parse(_baseURL + _getBaseContentUrl(username) + '/$contentId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $bearerToken',
+        },
+        body: text
+    );
+    if (response.statusCode != 200){
+      return false;
+    }
+    return true;
+  }
 }

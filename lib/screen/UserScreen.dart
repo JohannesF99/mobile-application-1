@@ -20,12 +20,13 @@ class UserScreen extends StatefulWidget {
 class _UserScreen extends State<UserScreen>{
 
   // Variablen für den Info-Tab
-  final nameController = TextEditingController();
-  final vornameController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _vornameController = TextEditingController();
   bool showEdit = false;
   late UserData userData;
   // Variablen für den Post-Tab
   List<ContentData> userContent = [];
+  final _changeController = TextEditingController();
   var _index = 0;
   //Variablen für den Freunde-Tab
   List<String> friendsList = [];
@@ -41,8 +42,8 @@ class _UserScreen extends State<UserScreen>{
   @override
   void dispose() {
     // Clean up the controller when the widget is disposed.
-    nameController.dispose();
-    vornameController.dispose();
+    _nameController.dispose();
+    _vornameController.dispose();
     super.dispose();
   }
 
@@ -124,8 +125,8 @@ class _UserScreen extends State<UserScreen>{
                                     children: [
                                       Text(userData.username),
                                       Text(userData.email),
-                                      getTextOrEditWidget(userData.name ?? "null", nameController),
-                                      getTextOrEditWidget(userData.vorname ?? "null", vornameController),
+                                      getTextOrEditWidget(userData.name ?? "null", _nameController),
+                                      getTextOrEditWidget(userData.vorname ?? "null", _vornameController),
                                       getTextOrDropdownWidget(userData.gender.name),
                                       getTextOrDatePickerWidget(userData.getBirthday()),
                                     ],
@@ -240,6 +241,43 @@ class _UserScreen extends State<UserScreen>{
                                                     ),
                                                     const Spacer(),
                                                     IconButton(
+                                                      icon: const Icon(Icons.edit),
+                                                      onPressed: () {
+                                                        _changeController.text = userContent[i].caption;
+                                                        showDialog(
+                                                          context: context,
+                                                          builder: (context) {
+                                                            return AlertDialog(
+                                                              title: const Text("Inhalt ändern:"),
+                                                              content: TextFormField(
+                                                                controller: _changeController,
+                                                              ),
+                                                              actions: [
+                                                                TextButton(
+                                                                  child: const Text('Close'),
+                                                                  onPressed: () {
+                                                                    Navigator.pop(context);
+                                                                  },
+                                                                ),
+                                                                TextButton(
+                                                                  child: const Text('Send'),
+                                                                  onPressed: () async {
+                                                                    final token = await StorageManager.readData("token");
+                                                                    final username = await StorageManager.readData("username");
+                                                                    BackendAPI().changeContent(token, username, userContent[i].contentId!, _changeController.text)
+                                                                        .then((success) { 
+                                                                          if(success) userContent[i].caption = _changeController.text; 
+                                                                        });
+                                                                    Navigator.pop(context);
+                                                                  },
+                                                                ),
+                                                              ],
+                                                            );
+                                                          }
+                                                        );
+                                                      },
+                                                    ),
+                                                    IconButton(
                                                         onPressed: () async {
                                                           final token = await StorageManager.readData("token");
                                                           final username = await StorageManager.readData("username");
@@ -267,24 +305,25 @@ class _UserScreen extends State<UserScreen>{
                               ListView(
                                 padding: const EdgeInsets.all(0),
                                 children: friendsList.map((e) =>
-                                  Container(
-                                    padding: const EdgeInsets.only(left: 10, right: 10),
-                                    height: 50,
-                                    child: Row(
-                                      children: [
-                                        Text(e),
-                                        const Spacer(),
-                                        IconButton(
-                                          onPressed: () async {
-                                            final token = await StorageManager.readData("token");
-                                            final username = await StorageManager.readData("username");
-                                            BackendAPI().removeFriend(token, username, e);
-                                            friendsList.remove(e);
-                                            setState(() {});
-                                          },
-                                          icon: const Icon(Icons.cancel)
-                                        )
-                                      ],
+                                  Card(
+                                    child: Container(
+                                      padding: const EdgeInsets.only(left: 10),
+                                      child: Row(
+                                        children: [
+                                          Text(e),
+                                          const Spacer(),
+                                          IconButton(
+                                              onPressed: () async {
+                                                final token = await StorageManager.readData("token");
+                                                final username = await StorageManager.readData("username");
+                                                BackendAPI().removeFriend(token, username, e);
+                                                friendsList.remove(e);
+                                                setState(() {});
+                                              },
+                                              icon: const Icon(Icons.cancel)
+                                          )
+                                        ],
+                                      ),
                                     )
                                   ),
                                 ).toList(),
@@ -428,8 +467,8 @@ class _UserScreen extends State<UserScreen>{
             Icons.cancel_outlined,
           ),
           onPressed: () async {
-            nameController.clear();
-            vornameController.clear();
+            _nameController.clear();
+            _vornameController.clear();
             var token = await StorageManager.readData("token") as String;
             userData = await BackendAPI().getUserData(token, userData.username);
             setState(() {
@@ -446,8 +485,8 @@ class _UserScreen extends State<UserScreen>{
             var editedData = UserData(
               userData.username,
               userData.email,
-              nameController.text,
-              vornameController.text,
+              _nameController.text,
+              _vornameController.text,
               userData.gender,
               userData.birthday.toString(),
             );
