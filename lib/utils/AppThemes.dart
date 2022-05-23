@@ -27,7 +27,15 @@ class AppThemes{
           bodyMedium: TextStyle(
               fontSize: 15
           )
-      )
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: Colors.red[900]
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            primary: Colors.red[900],
+          )
+      ),
   );
 
   /// Das dunkle Thema der Anwendung.
@@ -36,17 +44,17 @@ class AppThemes{
   static final darkTheme = ThemeData(
       brightness: Brightness.dark,
       iconTheme: const IconThemeData(color: Colors.white),
-      appBarTheme: AppBarTheme(
-        backgroundColor: Colors.red[900],
-        titleTextStyle: const TextStyle(
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.black,
+        titleTextStyle: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: Colors.white,
         ),
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: IconThemeData(color: Colors.white),
       ),
-      drawerTheme: DrawerThemeData(
-          backgroundColor: Colors.red[900],
+      drawerTheme: const DrawerThemeData(
+          backgroundColor: Colors.black,
       ),
       textTheme: const TextTheme(
         bodyMedium: TextStyle(
@@ -54,11 +62,11 @@ class AppThemes{
         )
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: Colors.red
+        backgroundColor: Colors.white
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            primary: Colors.red
+            primary: Colors.white,
           )
       ),
   );

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobileapplication1/api/BackendAPI.dart';
 import 'package:mobileapplication1/utils/StoreManager.dart';
+import 'package:mobileapplication1/widgets/ContentList.dart';
 
 import '../enum/Gender.dart';
-import '../enum/Interaction.dart';
 import '../model/ContentData.dart';
 import '../model/UserData.dart';
 import '../utils/NoOverflowBehavior.dart';
@@ -24,18 +24,10 @@ class _UserScreen extends State<UserScreen>{
   final _vornameController = TextEditingController();
   bool showEdit = false;
   late UserData userData;
-  // Variablen für den Post-Tab
-  List<ContentData> userContent = [];
-  final _changeController = TextEditingController();
-  var _index = 0;
-  //Variablen für den Freunde-Tab
-  List<String> friendsList = [];
 
   @override
   void initState() {
     userData = widget.userData;
-    _getContent();
-    _getFriendsList();
     super.initState();
   }
 
@@ -101,7 +93,7 @@ class _UserScreen extends State<UserScreen>{
                         ),
                       ),
                       SizedBox(
-                        height: MediaQuery.of(context).size.height-260,
+                        height: MediaQuery.of(context).size.height-270,
                         child: TabBarView(
                             children: [
                               Row(
@@ -133,200 +125,68 @@ class _UserScreen extends State<UserScreen>{
                                   ),
                                 ],
                               ),
-                              Center(
-                                child: SizedBox(
-                                  height: MediaQuery.of(context).size.height/3, // card height
-                                  child: PageView.builder(
-                                    itemCount: userContent.length,
-                                    controller: PageController(viewportFraction: 0.7),
-                                    onPageChanged: (int index) => setState(() => _index = index),
-                                    reverse: true,
-                                    itemBuilder: (_, i) {
-                                      return Transform.scale(
-                                        scale: i == _index ? 1 : 0.9,
-                                        child: Card(
-                                            elevation: 6,
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Container(
-                                                  padding: const EdgeInsets.all(10),
-                                                  child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          Text(
-                                                            userData.username,
-                                                            style: Theme.of(context).textTheme.headline6,
-                                                          ),
-                                                          const Spacer(),
-                                                          Text(_getPostTime(userContent[i].created)),
-                                                        ],
-                                                      ),
-                                                      const Divider(),
-                                                      Text(
-                                                        userContent[i].caption,
-                                                        style: Theme.of(context).textTheme.bodyMedium,
-                                                        overflow: TextOverflow.ellipsis,
-                                                        maxLines: 6,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                const Spacer(),
-                                                Row(
+                              FutureBuilder(
+                                future: _getContent(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState != ConnectionState.done) {
+                                    return const Center(
+                                        child: CircularProgressIndicator()
+                                    );
+                                  }
+                                  if(snapshot.hasData) {
+                                    return ContentList(
+                                      content: snapshot.data as List<ContentData>,
+                                      showEditingOptions: true,
+                                    );
+                                  } else {
+                                    return const Center(
+                                        child: CircularProgressIndicator()
+                                    );
+                                  }
+                                },
+                              ),
+                              FutureBuilder(
+                                future: _getFriendsList(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState != ConnectionState.done) {
+                                    return const Center(
+                                        child: CircularProgressIndicator()
+                                    );
+                                  }
+                                  if(snapshot.hasData) {
+                                    final friendsList = snapshot.data as List<String>;
+                                    return ListView(
+                                      padding: const EdgeInsets.all(0),
+                                      children: friendsList.map((e) =>
+                                          Card(
+                                              child: Container(
+                                                padding: const EdgeInsets.only(left: 10),
+                                                child: Row(
                                                   children: [
-                                                    IconButton(
-                                                      onPressed: () async {
-                                                        final token = await StorageManager.readData("token");
-                                                        final username = await StorageManager.readData("username");
-                                                        final contentId = userContent[i].contentId!;
-                                                        if (userContent[i].interactionData!.myInteraction == Interaction.Dislike || userContent[i].interactionData!.myInteraction == Interaction.None) {
-                                                          final result = await BackendAPI().likeContent(token, username, contentId);
-                                                          if (result && userContent[i].interactionData!.myInteraction == Interaction.Dislike) {
-                                                            userContent[i].interactionData!.likes++;
-                                                            userContent[i].interactionData!.dislikes--;
-                                                            userContent[i].interactionData!.myInteraction = Interaction.Like;
-                                                          } else if (result && userContent[i].interactionData!.myInteraction == Interaction.None) {
-                                                            userContent[i].interactionData!.likes++;
-                                                            userContent[i].interactionData!.myInteraction = Interaction.Like;
-                                                          }
-                                                        } else {
-                                                          final result = await BackendAPI().removeInteraction(token, username, contentId);
-                                                          if (result && userContent[i].interactionData!.myInteraction == Interaction.Dislike) {
-                                                            userContent[i].interactionData!.dislikes--;
-                                                            userContent[i].interactionData!.myInteraction = Interaction.None;
-                                                          } else if (result && userContent[i].interactionData!.myInteraction == Interaction.Like) {
-                                                            userContent[i].interactionData!.likes--;
-                                                            userContent[i].interactionData!.myInteraction = Interaction.None;
-                                                          }
-                                                        }
-                                                        setState(() {});
-                                                      },
-                                                      icon: const Icon(Icons.keyboard_arrow_up),
-                                                      color: _getColor(i, Interaction.Like),
-                                                    ),
-                                                    Text("${userContent[i].interactionData!.likes - userContent[i].interactionData!.dislikes}"),
-                                                    IconButton(
-                                                      onPressed: () async {
-                                                        final token = await StorageManager.readData("token");
-                                                        final username = await StorageManager.readData("username");
-                                                        final contentId = userContent[i].contentId!;
-                                                        if (userContent[i].interactionData!.myInteraction == Interaction.Like || userContent[i].interactionData!.myInteraction == Interaction.None) {
-                                                          final result = await BackendAPI().dislikeContent(token, username, contentId);
-                                                          if (result && userContent[i].interactionData!.myInteraction == Interaction.Like) {
-                                                            userContent[i].interactionData!.likes--;
-                                                            userContent[i].interactionData!.dislikes++;
-                                                            userContent[i].interactionData!.myInteraction = Interaction.Dislike;
-                                                          } else if (result && userContent[i].interactionData!.myInteraction == Interaction.None) {
-                                                            userContent[i].interactionData!.dislikes++;
-                                                            userContent[i].interactionData!.myInteraction = Interaction.Dislike;
-                                                          }
-                                                        } else {
-                                                          final result = await BackendAPI().removeInteraction(token, username, contentId);
-                                                          if (result && userContent[i].interactionData!.myInteraction == Interaction.Dislike) {
-                                                            userContent[i].interactionData!.dislikes--;
-                                                            userContent[i].interactionData!.myInteraction = Interaction.None;
-                                                          } else if (result && userContent[i].interactionData!.myInteraction == Interaction.Like) {
-                                                            userContent[i].interactionData!.likes--;
-                                                            userContent[i].interactionData!.myInteraction = Interaction.None;
-                                                          }
-                                                        }
-                                                        setState(() {});
-                                                      },
-                                                      icon: const Icon(Icons.keyboard_arrow_down),
-                                                      color: _getColor(i, Interaction.Dislike),
-                                                    ),
+                                                    Text(e),
                                                     const Spacer(),
-                                                    IconButton(
-                                                      icon: const Icon(Icons.edit),
-                                                      onPressed: () {
-                                                        _changeController.text = userContent[i].caption;
-                                                        showDialog(
-                                                          context: context,
-                                                          builder: (context) {
-                                                            return AlertDialog(
-                                                              title: const Text("Inhalt ändern:"),
-                                                              content: TextFormField(
-                                                                controller: _changeController,
-                                                              ),
-                                                              actions: [
-                                                                TextButton(
-                                                                  child: const Text('Close'),
-                                                                  onPressed: () {
-                                                                    Navigator.pop(context);
-                                                                  },
-                                                                ),
-                                                                TextButton(
-                                                                  child: const Text('Send'),
-                                                                  onPressed: () async {
-                                                                    final token = await StorageManager.readData("token");
-                                                                    final username = await StorageManager.readData("username");
-                                                                    BackendAPI().changeContent(token, username, userContent[i].contentId!, _changeController.text)
-                                                                        .then((success) { 
-                                                                          if(success) userContent[i].caption = _changeController.text; 
-                                                                        });
-                                                                    Navigator.pop(context);
-                                                                  },
-                                                                ),
-                                                              ],
-                                                            );
-                                                          }
-                                                        );
-                                                      },
-                                                    ),
                                                     IconButton(
                                                         onPressed: () async {
                                                           final token = await StorageManager.readData("token");
                                                           final username = await StorageManager.readData("username");
-                                                          final contentId = userContent[i].contentId!;
-                                                          final result = await BackendAPI().deleteUserContent(token, username, contentId);
-                                                          if (result) {
-                                                            setState(() {
-                                                              userContent.removeAt(i);
-                                                              _index--;
-                                                            });
-                                                          }
+                                                          BackendAPI().removeFriend(token, username, e);
+                                                          friendsList.remove(e);
+                                                          setState(() {});
                                                         },
-                                                        icon: const Icon(Icons.delete_sweep_outlined)
-                                                    ),
+                                                        icon: const Icon(Icons.cancel)
+                                                    )
                                                   ],
                                                 ),
-                                              ],
-                                            )
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                              ListView(
-                                padding: const EdgeInsets.all(0),
-                                children: friendsList.map((e) =>
-                                  Card(
-                                    child: Container(
-                                      padding: const EdgeInsets.only(left: 10),
-                                      child: Row(
-                                        children: [
-                                          Text(e),
-                                          const Spacer(),
-                                          IconButton(
-                                              onPressed: () async {
-                                                final token = await StorageManager.readData("token");
-                                                final username = await StorageManager.readData("username");
-                                                BackendAPI().removeFriend(token, username, e);
-                                                friendsList.remove(e);
-                                                setState(() {});
-                                              },
-                                              icon: const Icon(Icons.cancel)
-                                          )
-                                        ],
-                                      ),
-                                    )
-                                  ),
-                                ).toList(),
+                                              )
+                                          ),
+                                      ).toList(),
+                                    );
+                                  } else {
+                                    return const Center(
+                                        child: CircularProgressIndicator()
+                                    );
+                                  }
+                                },
                               ),
                             ]
                         ),
@@ -341,13 +201,13 @@ class _UserScreen extends State<UserScreen>{
     );
   }
 
-  _getFriendsList() async {
+  Future<List<String>> _getFriendsList() async {
     final token = await StorageManager.readData("token");
     final username = await StorageManager.readData("username");
-    friendsList = await BackendAPI().getFriendsList(token, username);
+    return await BackendAPI().getFriendsList(token, username);
   }
 
-  _getContent() async {
+  Future<List<ContentData>> _getContent() async {
     final token = await StorageManager.readData("token");
     final username = await StorageManager.readData("username");
     final list = await BackendAPI().getUserContent(token, username);
@@ -358,36 +218,7 @@ class _UserScreen extends State<UserScreen>{
           element.contentId!
       );
     }
-    setState(() {
-      userContent = list;
-    });
-  }
-
-  String _getPostTime(DateTime created) {
-    final min = DateTime.now().difference(created).inMinutes;
-    final h = min ~/ 60;
-    final days = h ~/ 24;
-    final mon = days ~/ 30;
-    if (mon >= 1) {
-      return "$mon Mo.";
-    }
-    if (days >= 1) {
-      return "$days Tage";
-    }
-    if (h >= 1) {
-      return "$h h";
-    }
-    if (min < 1) {
-      return "Jetzt";
-    }
-    return "$min min";
-  }
-
-  Color _getColor(int i, Interaction interaction) {
-    if (interaction == userContent[i].interactionData!.myInteraction){
-      return Theme.of(context).primaryColor;
-    }
-    return Theme.of(context).backgroundColor;
+    return list;
   }
 
   Widget getTextOrEditWidget(String value, TextEditingController textController){

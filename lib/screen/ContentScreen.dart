@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobileapplication1/api/BackendAPI.dart';
 import 'package:mobileapplication1/model/LoginData.dart';
-import 'package:mobileapplication1/utils/NoOverflowBehavior.dart';
+import 'package:mobileapplication1/widgets/ContentList.dart';
 
-import '../enum/Interaction.dart';
 import '../main.dart';
 import '../model/ContentData.dart';
 import 'CreateScreen.dart';
@@ -24,16 +23,6 @@ class _ContentScreenState extends State<ContentScreen> {
 
   /// Beschreibt den Modus des App-Themas.
   bool _darkMode = false;
-  final _passwordController = TextEditingController();
-  final _friendController = TextEditingController();
-  List<ContentData> friendContent = [];
-  var _index = 0;
-
-  @override
-  void initState() {
-    _getContent();
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +78,9 @@ class _ContentScreenState extends State<ContentScreen> {
                         child: child,
                       ),
                     )
-                ).whenComplete(() => _getContent());
+                ).whenComplete(() {
+                  setState(() {});
+                });
               },
             ),
             ListTile(
@@ -117,6 +108,7 @@ class _ContentScreenState extends State<ContentScreen> {
                 ],
               ),
               onTap: (){
+                final _passwordController = TextEditingController();
                 Navigator.pop(context);
                 showDialog(context: context, builder: (BuildContext context) =>
                     AlertDialog(
@@ -173,7 +165,7 @@ class _ContentScreenState extends State<ContentScreen> {
                   ),
                   const Spacer(),
                   Switch(
-                    activeColor: Colors.black,
+                    activeColor: Theme.of(context).iconTheme.color,
                     value: _darkMode,
                     onChanged: (value){
                       _darkMode = value;
@@ -187,6 +179,12 @@ class _ContentScreenState extends State<ContentScreen> {
         ),
       ),
       appBar: AppBar(
+        elevation: 6,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.circular(10)
+            ),
+        ),
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         title: const Text("Mobile Application 1"),
         actions: <Widget>[
@@ -198,6 +196,7 @@ class _ContentScreenState extends State<ContentScreen> {
               showDialog(
                   context: context,
                   builder: (context) {
+                    final _friendController = TextEditingController();
                     return AlertDialog(
                       title: const Text("Freund hinzufügen:"),
                       content: TextFormField(
@@ -208,6 +207,7 @@ class _ContentScreenState extends State<ContentScreen> {
                             child: const Text('Close'),
                             onPressed: () {
                               Navigator.pop(context);
+                              _friendController.clear();
                             },
                         ),
                         TextButton(
@@ -216,8 +216,11 @@ class _ContentScreenState extends State<ContentScreen> {
                             final token = await StorageManager.readData("token");
                             final username = await StorageManager.readData("username");
                             BackendAPI().addFriend(token, username, _friendController.text)
-                                .whenComplete(() => _getContent());
+                                .whenComplete(() {
+                                  setState(() {});
+                            });
                             Navigator.pop(context);
+                            _friendController.clear();
                           },
                         ),
                       ],
@@ -228,126 +231,25 @@ class _ContentScreenState extends State<ContentScreen> {
           ),
         ],
       ),
-      body: ScrollConfiguration(
-        behavior: NoOverflowBehavior(),
-        child: Center(
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height/3, // card height
-            child: PageView.builder(
-              itemCount: friendContent.length,
-              controller: PageController(viewportFraction: 0.7),
-              onPageChanged: (int index) => setState(() => _index = index),
-              reverse: true,
-              itemBuilder: (_, i) {
-                return Transform.scale(
-                  scale: i == _index ? 1 : 0.9,
-                  child: Card(
-                      elevation: 6,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      friendContent[i].userData!.username,
-                                      style: Theme.of(context).textTheme.headline6,
-                                    ),
-                                    const Spacer(),
-                                    Text(
-                                        _getPostTime(friendContent[i].created)
-                                    )
-                                  ],
-                                ),
-                                const Divider(),
-                                Text(
-                                  friendContent[i].caption,
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 6,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Spacer(),
-                          Row(
-                            children: [
-                              IconButton(
-                                onPressed: () async {
-                                  final token = await StorageManager.readData("token");
-                                  final username = await StorageManager.readData("username");
-                                  final contentId = friendContent[i].contentId!;
-                                  if (friendContent[i].interactionData!.myInteraction == Interaction.Dislike || friendContent[i].interactionData!.myInteraction == Interaction.None) {
-                                    final result = await BackendAPI().likeContent(token, username, contentId);
-                                    if (result && friendContent[i].interactionData!.myInteraction == Interaction.Dislike) {
-                                      friendContent[i].interactionData!.likes++;
-                                      friendContent[i].interactionData!.dislikes--;
-                                      friendContent[i].interactionData!.myInteraction = Interaction.Like;
-                                    } else if (result && friendContent[i].interactionData!.myInteraction == Interaction.None) {
-                                      friendContent[i].interactionData!.likes++;
-                                      friendContent[i].interactionData!.myInteraction = Interaction.Like;
-                                    }
-                                  } else {
-                                    final result = await BackendAPI().removeInteraction(token, username, contentId);
-                                    if (result && friendContent[i].interactionData!.myInteraction == Interaction.Dislike) {
-                                      friendContent[i].interactionData!.dislikes--;
-                                      friendContent[i].interactionData!.myInteraction = Interaction.None;
-                                    } else if (result && friendContent[i].interactionData!.myInteraction == Interaction.Like) {
-                                      friendContent[i].interactionData!.likes--;
-                                      friendContent[i].interactionData!.myInteraction = Interaction.None;
-                                    }
-                                  }
-                                  setState(() {});
-                                },
-                                icon: const Icon(Icons.keyboard_arrow_up),
-                                color: _getColor(i, Interaction.Like),
-                              ),
-                              Text("${friendContent[i].interactionData!.likes - friendContent[i].interactionData!.dislikes}"),
-                              IconButton(
-                                onPressed: () async {
-                                  final token = await StorageManager.readData("token");
-                                  final username = await StorageManager.readData("username");
-                                  final contentId = friendContent[i].contentId!;
-                                  if (friendContent[i].interactionData!.myInteraction == Interaction.Like || friendContent[i].interactionData!.myInteraction == Interaction.None) {
-                                    final result = await BackendAPI().dislikeContent(token, username, contentId);
-                                    if (result && friendContent[i].interactionData!.myInteraction == Interaction.Like) {
-                                      friendContent[i].interactionData!.likes--;
-                                      friendContent[i].interactionData!.dislikes++;
-                                      friendContent[i].interactionData!.myInteraction = Interaction.Dislike;
-                                    } else if (result && friendContent[i].interactionData!.myInteraction == Interaction.None) {
-                                      friendContent[i].interactionData!.dislikes++;
-                                      friendContent[i].interactionData!.myInteraction = Interaction.Dislike;
-                                    }
-                                  } else {
-                                    final result = await BackendAPI().removeInteraction(token, username, contentId);
-                                    if (result && friendContent[i].interactionData!.myInteraction == Interaction.Dislike) {
-                                      friendContent[i].interactionData!.dislikes--;
-                                      friendContent[i].interactionData!.myInteraction = Interaction.None;
-                                    } else if (result && friendContent[i].interactionData!.myInteraction == Interaction.Like) {
-                                      friendContent[i].interactionData!.likes--;
-                                      friendContent[i].interactionData!.myInteraction = Interaction.None;
-                                    }
-                                  }
-                                  setState(() {});
-                                },
-                                icon: const Icon(Icons.keyboard_arrow_down),
-                                color: _getColor(i, Interaction.Dislike),
-                              ),
-                            ],
-                          ),
-                        ],
-                      )
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
+      body: FutureBuilder(
+        future: _getContent(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Center(
+                child: CircularProgressIndicator()
+            );
+          }
+          if(snapshot.hasData) {
+            return ContentList(
+              content: snapshot.data as List<ContentData>,
+              showEditingOptions: false,
+            );
+          } else {
+            return const Center(
+                child: CircularProgressIndicator()
+            );
+          }
+        },
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.plus_one),
@@ -388,7 +290,7 @@ class _ContentScreenState extends State<ContentScreen> {
     }
   }
 
-  _getContent() async {
+  Future<List<ContentData>> _getContent() async {
     final token = await StorageManager.readData("token");
     final username = await StorageManager.readData("username");
     final list = await BackendAPI().getFriendsContent(token, username);
@@ -399,35 +301,6 @@ class _ContentScreenState extends State<ContentScreen> {
           element.contentId!
       );
     }
-    setState(() {
-      friendContent = list;
-    });
-  }
-
-  Color _getColor(int i, Interaction interaction) {
-    if (interaction == friendContent[i].interactionData!.myInteraction){
-      return Theme.of(context).primaryColor;
-    }
-    return Theme.of(context).backgroundColor;
-  }
-
-  String _getPostTime(DateTime created) {
-    final min = DateTime.now().difference(created).inMinutes;
-    final h = min ~/ 60;
-    final days = h ~/ 24;
-    final mon = days ~/ 30;
-    if (mon >= 1) {
-      return "$mon Mo.";
-    }
-    if (days >= 1) {
-      return "$days Tage";
-    }
-    if (h >= 1) {
-      return "$h h";
-    }
-    if (min < 1) {
-      return "Jetzt";
-    }
-    return "$min min";
+    return list;
   }
 }
