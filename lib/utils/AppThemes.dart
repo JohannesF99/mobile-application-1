@@ -58,7 +58,8 @@ class AppThemes{
       ),
       textTheme: const TextTheme(
         bodyMedium: TextStyle(
-          fontSize: 15
+          fontSize: 15,
+          color: Colors.white
         )
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(

@@ -3,6 +3,7 @@ import 'package:mobileapplication1/api/BackendAPI.dart';
 import 'package:mobileapplication1/utils/StoreManager.dart';
 
 import '../model/LikeDislikeList.dart';
+import 'UserInfoScreen.dart';
 
 class InteractionScreen extends StatefulWidget {
   const InteractionScreen({Key? key, required this.contentId}) : super(key: key);
@@ -54,7 +55,10 @@ class _InteractionScreen extends State<InteractionScreen> {
                                     IconButton(
                                       icon: const Icon(Icons.group_outlined),
                                       onPressed: () {
-
+                                        showDialog(
+                                            context: context,
+                                            builder: (_) => UserInfoScreen(username: interactions.likeList[index])
+                                        );
                                       },
                                     ),
                                   ],
@@ -76,7 +80,10 @@ class _InteractionScreen extends State<InteractionScreen> {
                                     IconButton(
                                       icon: const Icon(Icons.group_outlined),
                                       onPressed: () {
-
+                                        showDialog(
+                                            context: context,
+                                            builder: (_) => UserInfoScreen(username: interactions.dislikeList[index])
+                                        );
                                       },
                                     ),
                                   ],

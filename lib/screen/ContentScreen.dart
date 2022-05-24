@@ -186,7 +186,14 @@ class _ContentScreenState extends State<ContentScreen> {
             ),
         ),
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-        title: const Text("Mobile Application 1"),
+        title: IconButton(
+          icon: const Icon(Icons.grid_on_outlined),
+          enableFeedback: false,
+          onPressed: () {
+
+          },
+        ),
+        centerTitle: true,
         actions: <Widget>[
           IconButton(
             icon: const Icon(
