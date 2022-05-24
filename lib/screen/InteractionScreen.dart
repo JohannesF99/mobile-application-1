@@ -19,53 +19,53 @@ class _InteractionScreen extends State<InteractionScreen> {
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: "Likes"),
-              Tab(text: "Dislikes"),
-            ],
-          ),
-          title: const Text('Interaktion'),
-        ),
-        body: FutureBuilder(
-            future: _getInteractionLists(widget.contentId),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState != ConnectionState.done) {
-                return const Center(
-                    child: CircularProgressIndicator()
-                );
-              }
-              if(snapshot.hasData) {
-                final interactions = (snapshot.data as LikeDislikeList);
-                return TabBarView(
-                  children: [
-                    ListView.builder(
-                      itemCount: interactions.likeList.length,
-                      itemBuilder: (context, index) {
-                        return Card(
-                          child: Text(interactions.likeList[index]),
-                        );
-                      }
-                    ),
-                    ListView.builder(
-                        itemCount: interactions.dislikeList.length,
-                        itemBuilder: (context, index) {
-                          return Card(
-                            child: Text(interactions.dislikeList[index]),
-                          );
-                        }
-                    ),
-                  ],
-                );
-              } else {
-                return const Center(
-                    child: CircularProgressIndicator()
-                );
-              }
+      child: FutureBuilder(
+          future: _getInteractionLists(widget.contentId),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const Center(
+                  child: CircularProgressIndicator()
+              );
             }
-        ),
+            if(snapshot.hasData) {
+              final interactions = (snapshot.data as LikeDislikeList);
+              return Scaffold(
+                  appBar: AppBar(
+                    bottom: TabBar(
+                      tabs: [
+                        Tab(text: "${interactions.likeList.length} Like(s)"),
+                        Tab(text: "${interactions.dislikeList.length} Dislike(s)"),
+                      ],
+                    ),
+                    title: Text('${interactions.dislikeList.length + interactions.likeList.length} Interaktion(en)'),
+                  ),
+                  body: TabBarView(
+                    children: [
+                      ListView.builder(
+                          itemCount: interactions.likeList.length,
+                          itemBuilder: (context, index) {
+                            return Card(
+                              child: Text(interactions.likeList[index]),
+                            );
+                          }
+                      ),
+                      ListView.builder(
+                          itemCount: interactions.dislikeList.length,
+                          itemBuilder: (context, index) {
+                            return Card(
+                              child: Text(interactions.dislikeList[index]),
+                            );
+                          }
+                      ),
+                    ],
+                  )
+              );
+            } else {
+              return const Center(
+                  child: CircularProgressIndicator()
+              );
+            }
+          }
       ),
     );
   }
