@@ -87,8 +87,8 @@ class _UserInfoScreen extends State<UserInfoScreen> with SingleTickerProviderSta
                                 children: [
                                   Text(userData.username),
                                   Text(userData.email),
-                                  Text(userData.name!),
-                                  Text(userData.vorname!),
+                                  Text(userData.name ?? "null"),
+                                  Text(userData.vorname?? "null"),
                                   Text(userData.gender.name),
                                   Text(userData.getBirthday()),
                                 ],
