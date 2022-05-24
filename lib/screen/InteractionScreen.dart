@@ -45,7 +45,21 @@ class _InteractionScreen extends State<InteractionScreen> {
                           itemCount: interactions.likeList.length,
                           itemBuilder: (context, index) {
                             return Card(
-                              child: Text(interactions.likeList[index]),
+                              child: Container(
+                                padding: const EdgeInsets.only(left: 10),
+                                child: Row(
+                                  children: [
+                                    Text(interactions.likeList[index]),
+                                    const Spacer(),
+                                    IconButton(
+                                      icon: const Icon(Icons.group_outlined),
+                                      onPressed: () {
+
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
                             );
                           }
                       ),
@@ -53,7 +67,21 @@ class _InteractionScreen extends State<InteractionScreen> {
                           itemCount: interactions.dislikeList.length,
                           itemBuilder: (context, index) {
                             return Card(
-                              child: Text(interactions.dislikeList[index]),
+                              child: Container(
+                                padding: const EdgeInsets.only(left: 10),
+                                child: Row(
+                                  children: [
+                                    Text(interactions.dislikeList[index]),
+                                    const Spacer(),
+                                    IconButton(
+                                      icon: const Icon(Icons.group_outlined),
+                                      onPressed: () {
+
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
                             );
                           }
                       ),
