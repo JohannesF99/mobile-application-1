@@ -50,154 +50,154 @@ class _UserScreen extends State<UserScreen>{
           elevation: 0,
           titleTextStyle: Theme.of(context).appBarTheme.titleTextStyle,
         ),
-        body: ScrollConfiguration(
-          behavior: NoOverflowBehavior(),
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                Stack(
-                  children: [
-                    const Image(
-                      image: AssetImage('images/settings.png'),
-                      fit: BoxFit.cover,
+      body: ScrollConfiguration(
+        behavior: NoOverflowBehavior(),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Stack(
+                children: [
+                  const Image(
+                    image: AssetImage('images/settings.png'),
+                    fit: BoxFit.cover,
+                  ),
+                  Positioned(
+                    left: 10,
+                    bottom: 20,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(200.0),
+                      child: const Image(
+                        width: 100,
+                        image: AssetImage('images/profilbild.jpg'),
+                      ),
                     ),
-                    Positioned(
-                      left: 10,
-                      bottom: 20,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(200.0),
-                        child: const Image(
-                          width: 100,
-                          image: AssetImage('images/profilbild.jpg'),
-                        ),
+                  )
+                ],
+              ),
+              DefaultTabController(
+                length: 3,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Container(
+                      color: Theme.of(context).appBarTheme.backgroundColor,
+                      child: TabBar(
+                          labelColor: Theme.of(context).iconTheme.color,
+                          indicatorColor: Theme.of(context).iconTheme.color,
+                          unselectedLabelColor: Theme.of(context).appBarTheme.titleTextStyle!.color,
+                          tabs: const [
+                            Tab(text: "Infos"),
+                            Tab(text: "Posts"),
+                            Tab(text: "Freunde"),
+                          ]
                       ),
-                    )
-                  ],
-                ),
-                DefaultTabController(
-                  length: 3,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Container(
-                        color: Theme.of(context).appBarTheme.backgroundColor,
-                        child: TabBar(
-                            labelColor: Theme.of(context).iconTheme.color,
-                            indicatorColor: Theme.of(context).iconTheme.color,
-                            unselectedLabelColor: Theme.of(context).appBarTheme.titleTextStyle!.color,
-                            tabs: const [
-                              Tab(text: "Infos"),
-                              Tab(text: "Posts"),
-                              Tab(text: "Freunde"),
-                            ]
-                        ),
-                      ),
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height-270,
-                        child: TabBarView(
+                    ),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height-270,
+                      child: TabBarView(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: const [
-                                      Text("Username:"),
-                                      Text("E-Mail:"),
-                                      Text("Name:"),
-                                      Text("Vorname:"),
-                                      Text("Geschlecht:"),
-                                      Text("Geburtstag:"),
-                                    ],
-                                  ),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(userData.username),
-                                      Text(userData.email),
-                                      getTextOrEditWidget(userData.name ?? "null", _nameController),
-                                      getTextOrEditWidget(userData.vorname ?? "null", _vornameController),
-                                      getTextOrDropdownWidget(userData.gender.name),
-                                      getTextOrDatePickerWidget(userData.getBirthday()),
-                                    ],
-                                  ),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: const [
+                                  Text("Username:"),
+                                  Text("E-Mail:"),
+                                  Text("Name:"),
+                                  Text("Vorname:"),
+                                  Text("Geschlecht:"),
+                                  Text("Geburtstag:"),
                                 ],
                               ),
-                              FutureBuilder(
-                                future: _getContent(),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState != ConnectionState.done) {
-                                    return const Center(
-                                        child: CircularProgressIndicator()
-                                    );
-                                  }
-                                  if(snapshot.hasData) {
-                                    return ContentList(
-                                      content: snapshot.data as List<ContentData>,
-                                      showEditingOptions: true,
-                                    );
-                                  } else {
-                                    return const Center(
-                                        child: CircularProgressIndicator()
-                                    );
-                                  }
-                                },
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(userData.username),
+                                  Text(userData.email),
+                                  getTextOrEditWidget(userData.name ?? "null", _nameController),
+                                  getTextOrEditWidget(userData.vorname ?? "null", _vornameController),
+                                  getTextOrDropdownWidget(userData.gender.name),
+                                  getTextOrDatePickerWidget(userData.getBirthday()),
+                                ],
                               ),
-                              FutureBuilder(
-                                future: _getFriendsList(),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState != ConnectionState.done) {
-                                    return const Center(
-                                        child: CircularProgressIndicator()
-                                    );
-                                  }
-                                  if(snapshot.hasData) {
-                                    final friendsList = snapshot.data as List<String>;
-                                    return ListView(
-                                      padding: const EdgeInsets.all(0),
-                                      children: friendsList.map((e) =>
-                                          Card(
-                                              child: Container(
-                                                padding: const EdgeInsets.only(left: 10),
-                                                child: Row(
-                                                  children: [
-                                                    Text(e),
-                                                    const Spacer(),
-                                                    IconButton(
-                                                        onPressed: () async {
-                                                          final token = await StorageManager.readData("token");
-                                                          final username = await StorageManager.readData("username");
-                                                          BackendAPI().removeFriend(token, username, e);
-                                                          friendsList.remove(e);
-                                                          setState(() {});
-                                                        },
-                                                        icon: const Icon(Icons.cancel)
-                                                    )
-                                                  ],
-                                                ),
-                                              )
-                                          ),
-                                      ).toList(),
-                                    );
-                                  } else {
-                                    return const Center(
-                                        child: CircularProgressIndicator()
-                                    );
-                                  }
-                                },
-                              ),
-                            ]
-                        ),
+                            ],
+                          ),
+                          FutureBuilder(
+                            future: _getContent(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState != ConnectionState.done) {
+                                return const Center(
+                                    child: CircularProgressIndicator()
+                                );
+                              }
+                              if(snapshot.hasData) {
+                                return ContentList(
+                                  content: snapshot.data as List<ContentData>,
+                                  showEditingOptions: true,
+                                );
+                              } else {
+                                return const Center(
+                                    child: CircularProgressIndicator()
+                                );
+                              }
+                            },
+                          ),
+                          FutureBuilder(
+                            future: _getFriendsList(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState != ConnectionState.done) {
+                                return const Center(
+                                    child: CircularProgressIndicator()
+                                );
+                              }
+                              if(snapshot.hasData) {
+                                final friendsList = snapshot.data as List<String>;
+                                return ListView(
+                                  padding: const EdgeInsets.all(0),
+                                  children: friendsList.map((e) =>
+                                      Card(
+                                          child: Container(
+                                            padding: const EdgeInsets.only(left: 10),
+                                            child: Row(
+                                              children: [
+                                                Text(e),
+                                                const Spacer(),
+                                                IconButton(
+                                                    onPressed: () async {
+                                                      final token = await StorageManager.readData("token");
+                                                      final username = await StorageManager.readData("username");
+                                                      BackendAPI().removeFriend(token, username, e);
+                                                      friendsList.remove(e);
+                                                      setState(() {});
+                                                    },
+                                                    icon: const Icon(Icons.cancel)
+                                                )
+                                              ],
+                                            ),
+                                          )
+                                      ),
+                                  ).toList(),
+                                );
+                              } else {
+                                return const Center(
+                                    child: CircularProgressIndicator()
+                                );
+                              }
+                            },
+                          ),
+                        ]
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        )
+        ),
+      )
     );
   }
 

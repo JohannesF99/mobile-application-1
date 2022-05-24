@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mobileapplication1/model/ContentData.dart';
+import 'package:mobileapplication1/screen/InteractionScreen.dart';
 
 import '../api/BackendAPI.dart';
 import '../enum/Interaction.dart';
@@ -10,7 +11,7 @@ class ContentList extends StatefulWidget{
   const ContentList({
     Key? key, 
     required this.content,
-    required this.showEditingOptions
+    this.showEditingOptions = false
   }) : super(key: key);
 
   final List<ContentData> content;
@@ -115,7 +116,7 @@ class _ContentList extends State<ContentList> {
     return "$min min";
   }
   
-  List<StatelessWidget> _getFooter(int index){
+  List<Widget> _getFooter(int index){
     final _changeController = TextEditingController();
     var footer = [
       IconButton(
@@ -148,7 +149,18 @@ class _ContentList extends State<ContentList> {
         icon: const Icon(Icons.keyboard_arrow_up),
         color: _getColor(contentList[index].interactionData!.myInteraction, Interaction.Like),
       ),
-      Text("${contentList[index].interactionData!.likes - contentList[index].interactionData!.dislikes}"),
+      SizedBox(
+        width: MediaQuery.of(context).size.width/10,
+        child: TextButton(
+          child: Text("${contentList[index].interactionData!.likes - contentList[index].interactionData!.dislikes}"),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => InteractionScreen(contentId: contentList[index].contentId!),)
+            );
+          },
+        ),
+      ),
       IconButton(
         onPressed: () async {
           final token = await StorageManager.readData("token");
@@ -236,7 +248,7 @@ class _ContentList extends State<ContentList> {
         ),
       ]);
     }
-    return  footer;
+    return footer;
   }
   
 }

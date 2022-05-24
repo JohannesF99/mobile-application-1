@@ -242,7 +242,6 @@ class _ContentScreenState extends State<ContentScreen> {
           if(snapshot.hasData) {
             return ContentList(
               content: snapshot.data as List<ContentData>,
-              showEditingOptions: false,
             );
           } else {
             return const Center(
@@ -254,13 +253,10 @@ class _ContentScreenState extends State<ContentScreen> {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.plus_one),
         onPressed: () async {
-          final result = await Navigator.push(
+          Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const CreateScreen())
           );
-          if (result) {
-            //_getContent();
-          }
         },
       ),
     );

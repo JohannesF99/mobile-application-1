@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:http/http.dart' as http;
 import 'package:mobileapplication1/enum/Gender.dart';
 import 'package:mobileapplication1/model/InteractionData.dart';
+import 'package:mobileapplication1/model/LikeDislikeList.dart';
 import 'package:mobileapplication1/model/LoginData.dart';
 import 'package:mobileapplication1/model/UserData.dart';
 
@@ -283,5 +285,19 @@ class BackendAPI{
       return false;
     }
     return true;
+  }
+
+  Future<LikeDislikeList> getLikeDislikeList(String bearerToken, String username, int contentId) async {
+    var response = await http.get(
+        Uri.parse(_baseURL + _getBaseInteractionUrl(username) + '/$contentId/list'),
+        headers: {
+          'Authorization': 'Bearer $bearerToken',
+        }
+    );
+    if (response.statusCode != 200){
+      return LikeDislikeList([], []);
+    }
+    log(response.body);
+    return LikeDislikeList.fromJson(jsonDecode(response.body));
   }
 }
