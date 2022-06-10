@@ -23,6 +23,13 @@ class _ContentScreenState extends State<ContentScreen> {
 
   /// Beschreibt den Modus des App-Themas.
   bool _darkMode = false;
+  late Future<List<ContentData>> futureContent;
+
+  @override
+  void initState() {
+    futureContent = _getContent();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -189,9 +196,7 @@ class _ContentScreenState extends State<ContentScreen> {
         title: IconButton(
           icon: const Icon(Icons.grid_on_outlined),
           enableFeedback: false,
-          onPressed: () {
-
-          },
+          onPressed: _refreshList,
         ),
         centerTitle: true,
         actions: <Widget>[
@@ -239,22 +244,12 @@ class _ContentScreenState extends State<ContentScreen> {
         ],
       ),
       body: FutureBuilder(
-        future: _getContent(),
+        future: futureContent,
         builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(
-                child: CircularProgressIndicator()
-            );
-          }
-          if(snapshot.hasData) {
-            return ContentList(
-              content: snapshot.data as List<ContentData>,
-            );
-          } else {
-            return const Center(
-                child: CircularProgressIndicator()
-            );
-          }
+          return RefreshIndicator(
+            onRefresh: _refreshList,
+            child: _getContentList(snapshot),
+          );
         },
       ),
       floatingActionButton: FloatingActionButton(
@@ -267,6 +262,30 @@ class _ContentScreenState extends State<ContentScreen> {
         },
       ),
     );
+  }
+
+  Future<void> _refreshList() async {
+    var newContent = await _getContent();
+    setState(() {
+      futureContent = Future.value(newContent);
+    });
+  }
+
+  Widget _getContentList(snapshot){
+    if (snapshot.connectionState != ConnectionState.done) {
+      return const Center(
+          child: CircularProgressIndicator()
+      );
+    }
+    if(snapshot.hasData) {
+      return ContentList(
+        content: snapshot.data as List<ContentData>,
+      );
+    } else {
+      return const Center(
+          child: CircularProgressIndicator()
+      );
+    }
   }
 
   /// Lädt den Login-Token aus den Shared Preferences und versucht den Benutzer

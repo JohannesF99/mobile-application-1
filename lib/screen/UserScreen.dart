@@ -24,10 +24,14 @@ class _UserScreen extends State<UserScreen>{
   final _vornameController = TextEditingController();
   bool showEdit = false;
   late UserData userData;
+  late Future<List<ContentData>> _userContent;
+  late Future<List<String>> _userFriends;
 
   @override
   void initState() {
     userData = widget.userData;
+    _userContent = _getContent();
+    _userFriends = _getFriendsList();
     super.initState();
   }
 
@@ -93,7 +97,7 @@ class _UserScreen extends State<UserScreen>{
                       ),
                     ),
                     SizedBox(
-                      height: MediaQuery.of(context).size.height-270,
+                      height: MediaQuery.of(context).size.height-255,
                       child: TabBarView(
                         children: [
                           Row(
@@ -126,66 +130,21 @@ class _UserScreen extends State<UserScreen>{
                             ],
                           ),
                           FutureBuilder(
-                            future: _getContent(),
+                            future: _userContent,
                             builder: (context, snapshot) {
-                              if (snapshot.connectionState != ConnectionState.done) {
-                                return const Center(
-                                    child: CircularProgressIndicator()
-                                );
-                              }
-                              if(snapshot.hasData) {
-                                return ContentList(
-                                  content: snapshot.data as List<ContentData>,
-                                  showEditingOptions: true,
-                                );
-                              } else {
-                                return const Center(
-                                    child: CircularProgressIndicator()
-                                );
-                              }
+                              return RefreshIndicator(
+                                onRefresh: _refreshList,
+                                child: _getUserContent(snapshot),
+                              );
                             },
                           ),
                           FutureBuilder(
-                            future: _getFriendsList(),
+                            future: _userFriends,
                             builder: (context, snapshot) {
-                              if (snapshot.connectionState != ConnectionState.done) {
-                                return const Center(
-                                    child: CircularProgressIndicator()
-                                );
-                              }
-                              if(snapshot.hasData) {
-                                final friendsList = snapshot.data as List<String>;
-                                return ListView(
-                                  padding: const EdgeInsets.all(0),
-                                  children: friendsList.map((e) =>
-                                      Card(
-                                          child: Container(
-                                            padding: const EdgeInsets.only(left: 10),
-                                            child: Row(
-                                              children: [
-                                                Text(e),
-                                                const Spacer(),
-                                                IconButton(
-                                                    onPressed: () async {
-                                                      final token = await StorageManager.readData("token");
-                                                      final username = await StorageManager.readData("username");
-                                                      BackendAPI().removeFriend(token, username, e);
-                                                      friendsList.remove(e);
-                                                      setState(() {});
-                                                    },
-                                                    icon: const Icon(Icons.cancel)
-                                                )
-                                              ],
-                                            ),
-                                          )
-                                      ),
-                                  ).toList(),
-                                );
-                              } else {
-                                return const Center(
-                                    child: CircularProgressIndicator()
-                                );
-                              }
+                              return RefreshIndicator(
+                                onRefresh: _refreshFriendList,
+                                child: _getFriendList(snapshot),
+                              );
                             },
                           ),
                         ]
@@ -199,6 +158,79 @@ class _UserScreen extends State<UserScreen>{
         ),
       )
     );
+  }
+
+  _getUserContent(snapshot) {
+    if (snapshot.connectionState != ConnectionState.done) {
+      return const Center(
+          child: CircularProgressIndicator()
+      );
+    }
+    if(snapshot.hasData) {
+      return ContentList(
+        content: snapshot.data as List<ContentData>,
+        showEditingOptions: true,
+      );
+    } else {
+      return const Center(
+          child: CircularProgressIndicator()
+      );
+    }
+  }
+
+  _getFriendList(snapshot){
+    if (snapshot.connectionState != ConnectionState.done) {
+      return const Center(
+          child: CircularProgressIndicator()
+      );
+    }
+    if(snapshot.hasData) {
+      final friendsList = snapshot.data as List<String>;
+      return ListView(
+        padding: const EdgeInsets.all(0),
+        children: friendsList.map((e) =>
+            Card(
+                child: Container(
+                  padding: const EdgeInsets.only(left: 10),
+                  child: Row(
+                    children: [
+                      Text(e),
+                      const Spacer(),
+                      IconButton(
+                          onPressed: () async {
+                            final token = await StorageManager.readData("token");
+                            final username = await StorageManager.readData("username");
+                            BackendAPI().removeFriend(token, username, e);
+                            friendsList.remove(e);
+                            setState(() {});
+                          },
+                          icon: const Icon(Icons.cancel)
+                      )
+                    ],
+                  ),
+                )
+            ),
+        ).toList(),
+      );
+    } else {
+      return const Center(
+          child: CircularProgressIndicator()
+      );
+    }
+  }
+
+  Future<void> _refreshList() async {
+    var newContent = await _getContent();
+    setState(() {
+      _userContent = Future.value(newContent);
+    });
+  }
+
+  Future<void> _refreshFriendList() async {
+    var newFriends = await _getFriendsList();
+    setState(() {
+      _userFriends = Future.value(newFriends);
+    });
   }
 
   Future<List<String>> _getFriendsList() async {
