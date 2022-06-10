@@ -53,12 +53,19 @@ class _ContentList extends State<ContentList> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                    padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
+                    padding: const EdgeInsets.only(left: 10, right: 10, top: 0, bottom: 0),
                     child: Row(
                       children: [
-                        Text(
-                          contentList[index].userData!.username,
-                          style: Theme.of(context).textTheme.headline6,
+                        TextButton(
+                          onPressed: () {},
+                          child: Text(
+                            contentList[index].userData!.username,
+                            style: Theme.of(context).textTheme.headline6,
+                          ),
+                          style: TextButton.styleFrom(
+                            fixedSize: const Size.fromHeight(10),
+                            padding: const EdgeInsets.all(0)
+                          ),
                         ),
                         const Spacer(),
                         Text(
