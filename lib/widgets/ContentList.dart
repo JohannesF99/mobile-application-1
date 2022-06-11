@@ -81,7 +81,7 @@ class _ContentList extends State<ContentList> {
                       contentList[index].caption,
                       style: Theme.of(context).textTheme.bodyMedium,
                       overflow: TextOverflow.ellipsis,
-                      maxLines: 5,
+                      maxLines: 4,
                     ),
                   ),
                 const Spacer(),
