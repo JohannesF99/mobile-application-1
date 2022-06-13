@@ -280,6 +280,9 @@ class _ContentScreenState extends State<ContentScreen> {
     if(snapshot.hasData) {
       return ContentList(
         content: snapshot.data as List<ContentData>,
+        showEditingOptions: false,
+        showVoteOptions: true,
+        showUserNameLink: true,
       );
     } else {
       return const Center(

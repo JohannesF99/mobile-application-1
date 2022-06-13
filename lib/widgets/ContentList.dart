@@ -5,18 +5,23 @@ import 'package:mobileapplication1/screen/InteractionScreen.dart';
 
 import '../api/BackendAPI.dart';
 import '../enum/Interaction.dart';
+import '../screen/UserInfoScreen.dart';
 import '../utils/StoreManager.dart';
 
 class ContentList extends StatefulWidget{
   const ContentList({
     Key? key, 
     required this.content,
-    this.showEditingOptions = false
+    required this.showEditingOptions,
+    required this.showVoteOptions,
+    required this.showUserNameLink
   }) : super(key: key);
 
   final List<ContentData> content;
   final bool showEditingOptions;
-  
+  final bool showVoteOptions;
+  final bool showUserNameLink;
+
   @override
   State<StatefulWidget> createState() => _ContentList();
 }
@@ -53,27 +58,17 @@ class _ContentList extends State<ContentList> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                    padding: const EdgeInsets.only(left: 10, right: 10, top: 0, bottom: 0),
-                    child: Row(
-                      children: [
-                        TextButton(
-                          onPressed: () {},
-                          child: Text(
-                            contentList[index].userData!.username,
-                            style: Theme.of(context).textTheme.headline6,
-                          ),
-                          style: TextButton.styleFrom(
-                            fixedSize: const Size.fromHeight(10),
-                            padding: const EdgeInsets.all(0)
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                            _getPostTime(contentList[index].created)
-                        )
-                      ],
-                    ),
+                  padding: const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 0),
+                  child: Row(
+                    children: [
+                      _getUserName(index),
+                      const Spacer(),
+                      Text(
+                          _getPostTime(contentList[index].created)
+                      )
+                    ],
                   ),
+                ),
                 const Divider(),
                 Container(
                     padding: const EdgeInsets.only(left: 10, right: 10),
@@ -93,6 +88,30 @@ class _ContentList extends State<ContentList> {
           ),
         );
       },
+    );
+  }
+
+  _getUserName(index) {
+    if (widget.showUserNameLink) {
+      return InkWell(
+        child: Text(
+          contentList[index].userData!.username,
+          style: Theme.of(context).textTheme.headline6,
+        ),
+        onTap: () => widget.showEditingOptions ? null : _showProfile(index),
+      );
+    } else {
+      return Text(
+        contentList[index].userData!.username,
+        style: Theme.of(context).textTheme.headline6,
+      );
+    }
+  }
+
+  _showProfile(int i) async {
+    Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => UserInfoScreen(userData: contentList[i].userData!))
     );
   }
 
@@ -125,80 +144,92 @@ class _ContentList extends State<ContentList> {
   
   List<Widget> _getFooter(int index){
     final _changeController = TextEditingController();
-    var footer = [
-      IconButton(
-        onPressed: () async {
-          final token = await StorageManager.readData("token");
-          final username = await StorageManager.readData("username");
-          final contentId = contentList[index].contentId!;
-          if (contentList[index].interactionData!.myInteraction == Interaction.Dislike || contentList[index].interactionData!.myInteraction == Interaction.None) {
-            final result = await BackendAPI().likeContent(token, username, contentId);
-            if (result && contentList[index].interactionData!.myInteraction == Interaction.Dislike) {
-              contentList[index].interactionData!.likes++;
-              contentList[index].interactionData!.dislikes--;
-              contentList[index].interactionData!.myInteraction = Interaction.Like;
-            } else if (result && contentList[index].interactionData!.myInteraction == Interaction.None) {
-              contentList[index].interactionData!.likes++;
-              contentList[index].interactionData!.myInteraction = Interaction.Like;
+    var footer = <Widget>[];
+    if(widget.showVoteOptions) {
+      footer.addAll([
+        IconButton(
+          onPressed: () async {
+            final token = await StorageManager.readData("token");
+            final username = await StorageManager.readData("username");
+            final contentId = contentList[index].contentId!;
+            if (contentList[index].interactionData!.myInteraction == Interaction.Dislike || contentList[index].interactionData!.myInteraction == Interaction.None) {
+              final result = await BackendAPI().likeContent(token, username, contentId);
+              if (result && contentList[index].interactionData!.myInteraction == Interaction.Dislike) {
+                contentList[index].interactionData!.likes++;
+                contentList[index].interactionData!.dislikes--;
+                contentList[index].interactionData!.myInteraction = Interaction.Like;
+              } else if (result && contentList[index].interactionData!.myInteraction == Interaction.None) {
+                contentList[index].interactionData!.likes++;
+                contentList[index].interactionData!.myInteraction = Interaction.Like;
+              }
+            } else {
+              final result = await BackendAPI().removeInteraction(token, username, contentId);
+              if (result && contentList[index].interactionData!.myInteraction == Interaction.Dislike) {
+                contentList[index].interactionData!.dislikes--;
+                contentList[index].interactionData!.myInteraction = Interaction.None;
+              } else if (result && contentList[index].interactionData!.myInteraction == Interaction.Like) {
+                contentList[index].interactionData!.likes--;
+                contentList[index].interactionData!.myInteraction = Interaction.None;
+              }
             }
-          } else {
-            final result = await BackendAPI().removeInteraction(token, username, contentId);
-            if (result && contentList[index].interactionData!.myInteraction == Interaction.Dislike) {
-              contentList[index].interactionData!.dislikes--;
-              contentList[index].interactionData!.myInteraction = Interaction.None;
-            } else if (result && contentList[index].interactionData!.myInteraction == Interaction.Like) {
-              contentList[index].interactionData!.likes--;
-              contentList[index].interactionData!.myInteraction = Interaction.None;
-            }
-          }
-          setState(() {});
-        },
-        icon: const Icon(Icons.keyboard_arrow_up),
-        color: _getColor(contentList[index].interactionData!.myInteraction, Interaction.Like),
-      ),
-      SizedBox(
-        width: MediaQuery.of(context).size.width/10,
-        child: TextButton(
-          child: Text("${contentList[index].interactionData!.likes - contentList[index].interactionData!.dislikes}"),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => InteractionScreen(contentId: contentList[index].contentId!),)
-            );
+            setState(() {});
           },
+          icon: const Icon(Icons.keyboard_arrow_up),
+          color: _getColor(contentList[index].interactionData!.myInteraction, Interaction.Like),
         ),
-      ),
-      IconButton(
-        onPressed: () async {
-          final token = await StorageManager.readData("token");
-          final username = await StorageManager.readData("username");
-          final contentId = contentList[index].contentId!;
-          if (contentList[index].interactionData!.myInteraction == Interaction.Like || contentList[index].interactionData!.myInteraction == Interaction.None) {
-            final result = await BackendAPI().dislikeContent(token, username, contentId);
-            if (result && contentList[index].interactionData!.myInteraction == Interaction.Like) {
-              contentList[index].interactionData!.likes--;
-              contentList[index].interactionData!.dislikes++;
-              contentList[index].interactionData!.myInteraction = Interaction.Dislike;
-            } else if (result && contentList[index].interactionData!.myInteraction == Interaction.None) {
-              contentList[index].interactionData!.dislikes++;
-              contentList[index].interactionData!.myInteraction = Interaction.Dislike;
+        SizedBox(
+          width: MediaQuery.of(context).size.width/10,
+          child: TextButton(
+            child: Text("${contentList[index].interactionData!.likes - contentList[index].interactionData!.dislikes}"),
+            onPressed: () async {
+              final token = await StorageManager.readData("token");
+              final username = await StorageManager.readData("username");
+              final friendList = await BackendAPI().getFriendsList(token, username);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) =>
+                      InteractionScreen(
+                        contentId: contentList[index].contentId!,
+                        friendList: friendList,
+                        username: username,
+                      ),
+                  )
+              );
+            },
+          ),
+        ),
+        IconButton(
+          onPressed: () async {
+            final token = await StorageManager.readData("token");
+            final username = await StorageManager.readData("username");
+            final contentId = contentList[index].contentId!;
+            if (contentList[index].interactionData!.myInteraction == Interaction.Like || contentList[index].interactionData!.myInteraction == Interaction.None) {
+              final result = await BackendAPI().dislikeContent(token, username, contentId);
+              if (result && contentList[index].interactionData!.myInteraction == Interaction.Like) {
+                contentList[index].interactionData!.likes--;
+                contentList[index].interactionData!.dislikes++;
+                contentList[index].interactionData!.myInteraction = Interaction.Dislike;
+              } else if (result && contentList[index].interactionData!.myInteraction == Interaction.None) {
+                contentList[index].interactionData!.dislikes++;
+                contentList[index].interactionData!.myInteraction = Interaction.Dislike;
+              }
+            } else {
+              final result = await BackendAPI().removeInteraction(token, username, contentId);
+              if (result && contentList[index].interactionData!.myInteraction == Interaction.Dislike) {
+                contentList[index].interactionData!.dislikes--;
+                contentList[index].interactionData!.myInteraction = Interaction.None;
+              } else if (result && contentList[index].interactionData!.myInteraction == Interaction.Like) {
+                contentList[index].interactionData!.likes--;
+                contentList[index].interactionData!.myInteraction = Interaction.None;
+              }
             }
-          } else {
-            final result = await BackendAPI().removeInteraction(token, username, contentId);
-            if (result && contentList[index].interactionData!.myInteraction == Interaction.Dislike) {
-              contentList[index].interactionData!.dislikes--;
-              contentList[index].interactionData!.myInteraction = Interaction.None;
-            } else if (result && contentList[index].interactionData!.myInteraction == Interaction.Like) {
-              contentList[index].interactionData!.likes--;
-              contentList[index].interactionData!.myInteraction = Interaction.None;
-            }
-          }
-          setState(() {});
-        },
-        icon: const Icon(Icons.keyboard_arrow_down),
-        color: _getColor(contentList[index].interactionData!.myInteraction, Interaction.Dislike),
-      ),
-    ];
+            setState(() {});
+          },
+          icon: const Icon(Icons.keyboard_arrow_down),
+          color: _getColor(contentList[index].interactionData!.myInteraction, Interaction.Dislike),
+        ),
+      ]);
+    }
     if(widget.showEditingOptions) {
       footer.addAll([
         const Spacer(),

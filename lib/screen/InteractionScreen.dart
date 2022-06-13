@@ -6,15 +6,29 @@ import '../model/LikeDislikeList.dart';
 import 'UserInfoScreen.dart';
 
 class InteractionScreen extends StatefulWidget {
-  const InteractionScreen({Key? key, required this.contentId}) : super(key: key);
+  const InteractionScreen({Key? key,
+    required this.contentId,
+    required this.friendList,
+    required this.username
+  }) : super(key: key);
 
   final int contentId;
+  final List<String> friendList;
+  final String username;
 
   @override
   State<StatefulWidget> createState() => _InteractionScreen();
 }
 
 class _InteractionScreen extends State<InteractionScreen> {
+
+  late List<String> friendList;
+
+  @override
+  void initState() {
+    friendList = widget.friendList;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,21 +61,10 @@ class _InteractionScreen extends State<InteractionScreen> {
                           itemBuilder: (context, index) {
                             return Card(
                               child: Container(
+                                height: 55,
                                 padding: const EdgeInsets.only(left: 10),
                                 child: Row(
-                                  children: [
-                                    Text(interactions.likeList[index]),
-                                    const Spacer(),
-                                    IconButton(
-                                      icon: const Icon(Icons.group_outlined),
-                                      onPressed: () {
-                                        showDialog(
-                                            context: context,
-                                            builder: (_) => UserInfoScreen(username: interactions.likeList[index])
-                                        );
-                                      },
-                                    ),
-                                  ],
+                                  children: _getInteraction(interactions.likeList[index]),
                                 ),
                               ),
                             );
@@ -72,21 +75,10 @@ class _InteractionScreen extends State<InteractionScreen> {
                           itemBuilder: (context, index) {
                             return Card(
                               child: Container(
+                                height: 55,
                                 padding: const EdgeInsets.only(left: 10),
                                 child: Row(
-                                  children: [
-                                    Text(interactions.dislikeList[index]),
-                                    const Spacer(),
-                                    IconButton(
-                                      icon: const Icon(Icons.group_outlined),
-                                      onPressed: () {
-                                        showDialog(
-                                            context: context,
-                                            builder: (_) => UserInfoScreen(username: interactions.dislikeList[index])
-                                        );
-                                      },
-                                    ),
-                                  ],
+                                  children: _getInteraction(interactions.dislikeList[index]),
                                 ),
                               ),
                             );
@@ -103,6 +95,70 @@ class _InteractionScreen extends State<InteractionScreen> {
           }
       ),
     );
+  }
+
+  List<Widget> _getInteraction(String name) {
+    final widgets = <Widget>[
+      _getUserName(name),
+      const Spacer(),
+    ];
+    if (widget.username != name) {
+      widgets.add(_getAddOrRemoveButton(name));
+    }
+    return widgets;
+  }
+
+  Widget _getUserName(String name){
+    if (widget.username != name) {
+      return InkWell(
+        child: Text(name),
+        onTap: () => _showProfile(name),
+      );
+    } else {
+      return Text(name);
+    }
+  }
+
+  void _showProfile(String username) async {
+    final token = await StorageManager.readData("token");
+    final userData = await BackendAPI().getUserData(token, username);
+    Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => UserInfoScreen(userData: userData))
+    );
+  }
+
+  _getAddOrRemoveButton(String friend) {
+    if (widget.username == friend) {
+      return null;
+    }
+    if (widget.friendList.contains(friend)) {
+      return IconButton(
+          onPressed: () async {
+            final token = await StorageManager.readData("token");
+            final username = await StorageManager.readData("username");
+            BackendAPI().removeFriend(token, username, friend)
+                .whenComplete(() => setState(() {
+                  friendList.remove(friend);
+                })
+            );
+          },
+          icon: const Icon(Icons.cancel)
+      );
+    } else {
+      return IconButton(
+          onPressed: () async {
+            final token = await StorageManager.readData("token");
+            final username = await StorageManager.readData("username");
+            BackendAPI().addFriend(token, username, friend)
+                .whenComplete(() => setState(() {
+                  friendList.add(friend);
+                })
+            );
+          },
+          icon: const Icon(Icons.add)
+      );
+    }
   }
 
   Future<LikeDislikeList> _getInteractionLists(int contentId) async {

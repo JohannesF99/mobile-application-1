@@ -170,6 +170,8 @@ class _UserScreen extends State<UserScreen>{
       return ContentList(
         content: snapshot.data as List<ContentData>,
         showEditingOptions: true,
+        showVoteOptions: true,
+        showUserNameLink: false,
       );
     } else {
       return const Center(
